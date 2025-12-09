@@ -10,12 +10,12 @@ export class UsersPage {
 
   async goto() {
     await this.page.goto('/#/users')
-    await this.page.waitForTimeout(2000)
+    await this.usersTable.waitFor({ state: 'visible' })
   }
 
   async clickCreate() {
     await this.createButton.click()
-    await this.page.waitForTimeout(1000)
+    await this.page.locator('input[name="email"]').waitFor({ state: 'visible' })
   }
 
   async fillUserForm(userData) {
@@ -36,7 +36,7 @@ export class UsersPage {
 
   async saveUser() {
     await this.page.locator('button[type="submit"], button[aria-label="Save"]').click()
-    await this.page.waitForTimeout(2000)
+    await this.page.waitForLoadState('networkidle')
   }
 
   async getUserRowByEmail(email) {
@@ -52,24 +52,23 @@ export class UsersPage {
     const row = await this.getUserRowByEmail(email)
     const userId = await row.locator('td').nth(1).textContent()
     await this.page.goto(`/#/users/${userId}/edit`)
-    await this.page.waitForTimeout(2000)
+    await this.page.locator('input[name="email"]').waitFor({ state: 'visible' })
   }
 
   async deleteUser(email) {
     const checkbox = await this.getUserCheckboxByEmail(email)
     await checkbox.check()
     await this.deleteButton.click()
-    await this.page.waitForTimeout(2000)
+    await this.page.waitForLoadState('networkidle')
   }
 
   async selectAllUsers() {
     await this.selectAllCheckbox.check()
-    await this.page.waitForTimeout(500)
   }
 
   async deleteAllSelected() {
     await this.deleteButton.click()
-    await this.page.waitForTimeout(2000)
+    await this.page.waitForLoadState('networkidle')
   }
 
   async getUserCount() {
@@ -114,7 +113,6 @@ export class UsersPage {
   }
 
   async isEditFormVisible() {
-    await this.page.waitForTimeout(1000)
     return await this.isCreateFormVisible()
   }
 
@@ -131,7 +129,6 @@ export class UsersPage {
   async editUser(email, editedData) {
     await this.goto()
     await this.clickEditUser(email)
-    await this.page.waitForTimeout(1000)
     await this.fillUserForm(editedData)
     await this.saveUser()
     await this.goto()
@@ -151,7 +148,7 @@ export class UsersPage {
     const emailInput = this.page.locator('input[name="email"]')
     await emailInput.fill(email)
     await this.page.locator('button[type="submit"], button[aria-label="Save"]').click()
-    await this.page.waitForTimeout(2000)
+    await this.page.waitForLoadState('networkidle')
     return {
       emailInput,
       getInputValue: () => emailInput.inputValue(),
@@ -189,7 +186,7 @@ export class UsersPage {
     const checkbox = await this.getUserCheckboxByEmail(firstUserEmail)
     await checkbox.check()
     await this.deleteButton.click()
-    await this.page.waitForTimeout(2000)
+    await this.page.waitForLoadState('networkidle')
     return { initialCount, firstUserEmail }
   }
 }

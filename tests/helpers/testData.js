@@ -32,3 +32,17 @@ export function generateEditedUserData() {
     lastName: 'Name',
   }
 }
+
+export function generateStatusData() {
+  return {
+    name: `Test Status ${Date.now()}`,
+    slug: `test-status-${Date.now()}`,
+  }
+}
+
+export function generateEditedStatusData() {
+  return {
+    name: `Edited Status ${Date.now()}`,
+    slug: `edited-status-${Date.now()}`,
+  }
+}

@@ -18,13 +18,13 @@ export class LoginPage {
   }
 
   async isLoginFormVisible() {
-    await this.page.waitForSelector('input[type="password"]', { state: 'visible' })
+    await this.passwordInput.waitFor({ state: 'visible' })
     return (await this.loginInput.isVisible()) && (await this.passwordInput.isVisible())
   }
 
   async logout() {
     await this.page.locator('button[aria-label="Profile"]').click()
-    await this.page.waitForTimeout(500)
+    await this.page.locator('[role="menuitem"]:has-text("Logout")').waitFor({ state: 'visible' })
     await this.page.locator('[role="menuitem"]:has-text("Logout")').click()
   }
 
