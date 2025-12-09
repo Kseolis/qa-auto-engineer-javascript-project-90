@@ -1,14 +1,16 @@
+import { URLS, SELECTORS } from '../helpers/constants.js'
+
 export class LoginPage {
   constructor(page) {
     this.page = page
-    this.loginInput = page.locator('input[name="username"]').first()
-    this.passwordInput = page.locator('input[type="password"]').first()
-    this.submitButton = page.locator('button[type="submit"]:has-text("Sign in")').first()
-    this.logoutButton = page.locator('button:has-text("Logout"), a:has-text("Logout")').first()
+    this.loginInput = page.locator(SELECTORS.LOGIN_USERNAME_INPUT).first()
+    this.passwordInput = page.locator(SELECTORS.LOGIN_PASSWORD_INPUT).first()
+    this.submitButton = page.locator(SELECTORS.LOGIN_SUBMIT_BUTTON).first()
+    this.logoutButton = page.locator(SELECTORS.LOGOUT_BUTTON).first()
   }
 
   async goto() {
-    await this.page.goto('/')
+    await this.page.goto(URLS.HOME)
   }
 
   async login(login, password) {
@@ -23,9 +25,9 @@ export class LoginPage {
   }
 
   async logout() {
-    await this.page.locator('button[aria-label="Profile"]').click()
-    await this.page.locator('[role="menuitem"]:has-text("Logout")').waitFor({ state: 'visible' })
-    await this.page.locator('[role="menuitem"]:has-text("Logout")').click()
+    await this.page.locator(SELECTORS.PROFILE_BUTTON).click()
+    await this.page.locator(SELECTORS.LOGOUT_MENU_ITEM).waitFor({ state: 'visible' })
+    await this.page.locator(SELECTORS.LOGOUT_MENU_ITEM).click()
   }
 
   async isLoggedIn() {

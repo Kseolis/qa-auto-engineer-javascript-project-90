@@ -1,27 +1,29 @@
-export class UsersPage {
-  constructor(page) {
-    this.page = page
-    this.createButton = page.locator('a[href="#/users/create"]')
-    this.usersTable = page.locator('table')
-    this.selectAllCheckbox = page.locator('input[type="checkbox"]').first()
-    this.deleteButton = page.locator('button[aria-label="Delete"]')
-    this.exportButton = page.locator('button[aria-label="Export"]')
-  }
+import { BasePage } from './BasePage.js'
+import { URLS, SELECTORS, COLUMN_INDEXES, TIMEOUTS } from '../helpers/constants.js'
 
-  async goto() {
-    await this.page.goto('/#/users')
-    await this.usersTable.waitFor({ state: 'visible' })
+export class UsersPage extends BasePage {
+  constructor(page) {
+    const usersTable = page.locator(SELECTORS.TABLE)
+    super(page, {
+      url: URLS.USERS,
+      tableLocator: usersTable,
+      createButtonLocator: page.locator(SELECTORS.USERS_CREATE_BUTTON),
+      firstInputLocator: page.locator(SELECTORS.USER_EMAIL_INPUT),
+      selectAllCheckboxLocator: page.locator(SELECTORS.SELECT_ALL_CHECKBOX).first(),
+      deleteButtonLocator: page.locator(SELECTORS.DELETE_BUTTON),
+    })
+    this.page = page
+    this.usersTable = usersTable
   }
 
   async clickCreate() {
-    await this.createButton.click()
-    await this.page.locator('input[name="email"]').waitFor({ state: 'visible' })
+    await super.clickCreate()
   }
 
   async fillUserForm(userData) {
-    const emailInput = this.page.locator('input[name="email"]')
-    const firstNameInput = this.page.locator('input[name="firstName"]')
-    const lastNameInput = this.page.locator('input[name="lastName"]')
+    const emailInput = this.page.locator(SELECTORS.USER_EMAIL_INPUT)
+    const firstNameInput = this.page.locator(SELECTORS.USER_FIRST_NAME_INPUT)
+    const lastNameInput = this.page.locator(SELECTORS.USER_LAST_NAME_INPUT)
 
     if (userData.email) {
       await emailInput.fill(userData.email)
@@ -35,56 +37,48 @@ export class UsersPage {
   }
 
   async saveUser() {
-    await this.page.locator('button[type="submit"], button[aria-label="Save"]').click()
-    await this.page.waitForLoadState('networkidle')
+    await super.saveForm()
   }
 
   async getUserRowByEmail(email) {
-    return this.page.locator(`tr:has-text("${email}")`)
+    return await super.getRowByText(email)
   }
 
   async getUserCheckboxByEmail(email) {
-    const row = await this.getUserRowByEmail(email)
-    return row.locator('td').first().locator('input[type="checkbox"]')
+    return await super.getCheckboxByText(email)
   }
 
   async clickEditUser(email) {
     const row = await this.getUserRowByEmail(email)
-    const userId = await row.locator('td').nth(1).textContent()
-    await this.page.goto(`/#/users/${userId}/edit`)
-    await this.page.locator('input[name="email"]').waitFor({ state: 'visible' })
+    const userId = await super.getIdFromRow(row)
+    await super.gotoEditPage(userId)
   }
 
   async deleteUser(email) {
-    const checkbox = await this.getUserCheckboxByEmail(email)
-    await checkbox.check()
-    await this.deleteButton.click()
-    await this.page.waitForLoadState('networkidle')
+    await super.deleteByText(email)
   }
 
   async selectAllUsers() {
-    await this.selectAllCheckbox.check()
+    await super.selectAll()
   }
 
   async deleteAllSelected() {
-    await this.deleteButton.click()
-    await this.page.waitForLoadState('networkidle')
+    await super.deleteAllSelected()
   }
 
   async getUserCount() {
-    const rows = await this.page.locator('tbody tr').all()
-    return rows.length
+    return await super.getCount()
   }
 
   async getUserData(email) {
     const row = await this.getUserRowByEmail(email)
-    const cells = await row.locator('td').all()
+    const cells = await row.locator(SELECTORS.TABLE_CELL).all()
 
     return {
-      id: (await cells[1]?.textContent())?.trim(),
-      email: (await cells[2]?.textContent())?.trim(),
-      firstName: (await cells[3]?.textContent())?.trim(),
-      lastName: (await cells[4]?.textContent())?.trim(),
+      id: (await cells[COLUMN_INDEXES.ID]?.textContent())?.trim(),
+      email: (await cells[COLUMN_INDEXES.EMAIL]?.textContent())?.trim(),
+      firstName: (await cells[COLUMN_INDEXES.FIRST_NAME]?.textContent())?.trim(),
+      lastName: (await cells[COLUMN_INDEXES.LAST_NAME]?.textContent())?.trim(),
     }
   }
 
@@ -94,21 +88,21 @@ export class UsersPage {
   }
 
   async getFirstUserEmail() {
-    const firstRow = this.page.locator('tbody tr').first()
-    return await firstRow.locator('td').nth(2).textContent()
+    const firstRow = this.page.locator(SELECTORS.TABLE_BODY_ROW).first()
+    return await firstRow.locator(SELECTORS.TABLE_CELL).nth(COLUMN_INDEXES.EMAIL).textContent()
   }
 
   async isCreateFormVisible() {
     await Promise.all([
-      this.page.locator('input[name="email"]').waitFor({ state: 'visible' }),
-      this.page.locator('input[name="firstName"]').waitFor({ state: 'visible' }),
-      this.page.locator('input[name="lastName"]').waitFor({ state: 'visible' }),
+      this.page.locator(SELECTORS.USER_EMAIL_INPUT).waitFor({ state: 'visible' }),
+      this.page.locator(SELECTORS.USER_FIRST_NAME_INPUT).waitFor({ state: 'visible' }),
+      this.page.locator(SELECTORS.USER_LAST_NAME_INPUT).waitFor({ state: 'visible' }),
     ])
     return {
-      email: this.page.locator('input[name="email"]'),
-      firstName: this.page.locator('input[name="firstName"]'),
-      lastName: this.page.locator('input[name="lastName"]'),
-      saveButton: this.page.locator('button[type="submit"], button[aria-label="Save"]'),
+      email: this.page.locator(SELECTORS.USER_EMAIL_INPUT),
+      firstName: this.page.locator(SELECTORS.USER_FIRST_NAME_INPUT),
+      lastName: this.page.locator(SELECTORS.USER_LAST_NAME_INPUT),
+      saveButton: this.page.locator(SELECTORS.SAVE_BUTTON),
     }
   }
 
@@ -145,10 +139,10 @@ export class UsersPage {
   }
 
   async fillInvalidEmail(email) {
-    const emailInput = this.page.locator('input[name="email"]')
+    const emailInput = this.page.locator(SELECTORS.USER_EMAIL_INPUT)
     await emailInput.fill(email)
-    await this.page.locator('button[type="submit"], button[aria-label="Save"]').click()
-    await this.page.waitForLoadState('networkidle')
+    await this.page.locator(SELECTORS.SAVE_BUTTON).click()
+    await this.page.locator(SELECTORS.USER_EMAIL_INPUT).waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM })
     return {
       emailInput,
       getInputValue: () => emailInput.inputValue(),
@@ -157,36 +151,31 @@ export class UsersPage {
 
   async isEditPage() {
     const currentUrl = this.page.url()
-    return currentUrl.includes('/edit')
+    return currentUrl.includes(URLS.EDIT_SUFFIX)
   }
 
   async getAllUserRows() {
-    return await this.page.locator('tbody tr').all()
+    return await super.getAllRows()
   }
 
   async getUserRowData(row) {
-    const cells = await row.locator('td').all()
+    const cells = await row.locator(SELECTORS.TABLE_CELL).all()
     return {
-      email: await cells[2]?.textContent(),
-      firstName: await cells[3]?.textContent(),
-      lastName: await cells[4]?.textContent(),
+      email: await cells[COLUMN_INDEXES.EMAIL]?.textContent(),
+      firstName: await cells[COLUMN_INDEXES.FIRST_NAME]?.textContent(),
+      lastName: await cells[COLUMN_INDEXES.LAST_NAME]?.textContent(),
     }
   }
 
   async areAllCheckboxesSelected() {
-    const checkboxes = await this.page.locator('tbody input[type="checkbox"]').all()
-    const checkedStates = await Promise.all(checkboxes.map(cb => cb.isChecked()))
-    return checkedStates.every(state => state === true)
+    return await super.areAllCheckboxesSelected()
   }
 
   async deleteFirstUser() {
     await this.goto()
     const initialCount = await this.getUserCount()
     const firstUserEmail = await this.getFirstUserEmail()
-    const checkbox = await this.getUserCheckboxByEmail(firstUserEmail)
-    await checkbox.check()
-    await this.deleteButton.click()
-    await this.page.waitForLoadState('networkidle')
+    await this.deleteUser(firstUserEmail)
     return { initialCount, firstUserEmail }
   }
 }

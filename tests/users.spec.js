@@ -1,12 +1,11 @@
 import { test, expect } from '@playwright/test'
-import { LoginPage } from './pages/LoginPage.js'
 import { UsersPage } from './pages/UsersPage.js'
-import { testUsers, generateUserData, generateEditedUserData } from './helpers/testData.js'
+import { generateUserData, generateEditedUserData } from './helpers/testData.js'
+import { loginAsValidUser } from './helpers/authHelper.js'
+import { TIMEOUTS, TEST_CONSTANTS } from './helpers/constants.js'
 
 test.beforeEach(async ({ page }) => {
-  const loginPage = new LoginPage(page)
-  await loginPage.goto()
-  await loginPage.login(testUsers.valid.login, testUsers.valid.password)
+  await loginAsValidUser(page)
 })
 
 test.describe('Создание пользователей', () => {
@@ -29,8 +28,8 @@ test.describe('Создание пользователей', () => {
 
     const { initialCount } = await usersPage.createUser(userData)
 
-    await expect.poll(() => usersPage.getUserCount(), { timeout: 10000 }).toBeGreaterThan(initialCount)
-    await expect.poll(() => usersPage.isUserVisible(userData.email), { timeout: 10000 }).toBe(true)
+    await expect.poll(() => usersPage.getUserCount(), { timeout: TIMEOUTS.MEDIUM }).toBeGreaterThan(initialCount)
+    await expect.poll(() => usersPage.isUserVisible(userData.email), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
 
     const verification = await usersPage.verifyUserData(userData.email, userData)
     await expect.soft(verification.email).toBe(true)
@@ -58,7 +57,7 @@ test.describe('Просмотр списка пользователей', () => 
     const rows = await usersPage.getAllUserRows()
     await expect(rows.length).toBeGreaterThan(0)
 
-    for (let i = 0; i < Math.min(rows.length, 3); i++) {
+    for (let i = 0; i < Math.min(rows.length, TEST_CONSTANTS.MAX_ROWS_TO_CHECK); i++) {
       const userData = await usersPage.getUserRowData(rows[i])
       await expect.soft(userData.email).toBeTruthy()
       await expect.soft(userData.firstName).toBeTruthy()
@@ -78,9 +77,9 @@ test.describe('Редактирование пользователей', () => {
     await usersPage.clickEditUser(firstUserEmail)
 
     const form = await usersPage.isEditFormVisible()
-    await expect.soft(form.email).toBeVisible({ timeout: 5000 })
-    await expect.soft(form.firstName).toBeVisible({ timeout: 5000 })
-    await expect.soft(form.lastName).toBeVisible({ timeout: 5000 })
+    await expect.soft(form.email).toBeVisible({ timeout: TIMEOUTS.SHORT })
+    await expect.soft(form.firstName).toBeVisible({ timeout: TIMEOUTS.SHORT })
+    await expect.soft(form.lastName).toBeVisible({ timeout: TIMEOUTS.SHORT })
   })
 
   test('изменение данных пользователя сохраняется корректно', async ({ page }) => {
@@ -93,7 +92,7 @@ test.describe('Редактирование пользователей', () => {
 
     await usersPage.editUser(firstUserEmail, editedData)
 
-    await expect.poll(() => usersPage.isUserVisible(editedData.email), { timeout: 10000 }).toBe(true)
+    await expect.poll(() => usersPage.isUserVisible(editedData.email), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
 
     const verification = await usersPage.verifyUserData(editedData.email, editedData)
     await expect.soft(verification.email).toBe(true)
