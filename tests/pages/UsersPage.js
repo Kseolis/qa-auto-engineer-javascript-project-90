@@ -41,11 +41,11 @@ export class UsersPage extends BasePage {
   }
 
   async getUserRowByEmail(email) {
-    return await super.getRowByText(email)
+    return await super.getRowByCellText(email, COLUMN_INDEXES.EMAIL)
   }
 
   async getUserCheckboxByEmail(email) {
-    return await super.getCheckboxByText(email)
+    return await super.getCheckboxByCellText(email, COLUMN_INDEXES.EMAIL)
   }
 
   async clickEditUser(email) {
@@ -55,7 +55,7 @@ export class UsersPage extends BasePage {
   }
 
   async deleteUser(email) {
-    await super.deleteByText(email)
+    await super.deleteByCellText(email, COLUMN_INDEXES.EMAIL)
   }
 
   async selectAllUsers() {

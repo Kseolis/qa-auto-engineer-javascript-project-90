@@ -46,3 +46,15 @@ export function generateEditedStatusData() {
     slug: `edited-status-${Date.now()}`,
   }
 }
+
+export function generateLabelData() {
+  return {
+    name: `Test Label ${Date.now()}`,
+  }
+}
+
+export function generateEditedLabelData() {
+  return {
+    name: `Edited Label ${Date.now()}`,
+  }
+}

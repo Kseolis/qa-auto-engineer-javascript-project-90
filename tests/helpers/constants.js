@@ -14,6 +14,8 @@ export const URLS = {
   USERS_CREATE: '/#/users/create',
   STATUSES: '/#/task_statuses',
   STATUSES_CREATE: '/#/task_statuses/create',
+  LABELS: '/#/labels',
+  LABELS_CREATE: '/#/labels/create',
   EDIT_SUFFIX: '/edit',
 }
 
@@ -32,6 +34,7 @@ export const SELECTORS = {
   USER_LAST_NAME_INPUT: 'input[name="lastName"]',
   STATUS_NAME_INPUT: 'input[name="name"]',
   STATUS_SLUG_INPUT: 'input[name="slug"]',
+  LABEL_NAME_INPUT: 'input[name="name"]',
   LOGIN_USERNAME_INPUT: 'input[name="username"]',
   LOGIN_PASSWORD_INPUT: 'input[type="password"]',
   LOGIN_SUBMIT_BUTTON: 'button[type="submit"]:has-text("Sign in")',
@@ -40,6 +43,7 @@ export const SELECTORS = {
   LOGOUT_MENU_ITEM: '[role="menuitem"]:has-text("Logout")',
   STATUSES_CREATE_BUTTON: 'a[href="#/task_statuses/create"]',
   USERS_CREATE_BUTTON: 'a[href="#/users/create"]',
+  LABELS_CREATE_BUTTON: 'a[href="#/labels/create"]',
 }
 
 export const TIMEOUTS = {

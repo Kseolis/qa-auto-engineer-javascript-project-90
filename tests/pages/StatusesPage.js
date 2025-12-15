@@ -37,11 +37,11 @@ export class StatusesPage extends BasePage {
   }
 
   async getStatusRowBySlug(slug) {
-    return await super.getRowByText(slug)
+    return await super.getRowByCellText(slug, COLUMN_INDEXES.SLUG)
   }
 
   async getStatusCheckboxBySlug(slug) {
-    return await super.getCheckboxByText(slug)
+    return await super.getCheckboxByCellText(slug, COLUMN_INDEXES.SLUG)
   }
 
   async clickEditStatus(slug) {
@@ -51,7 +51,7 @@ export class StatusesPage extends BasePage {
   }
 
   async deleteStatus(slug) {
-    await super.deleteByText(slug)
+    await super.deleteByCellText(slug, COLUMN_INDEXES.SLUG)
   }
 
   async selectAllStatuses() {

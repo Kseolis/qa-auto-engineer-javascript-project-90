@@ -47,9 +47,36 @@ export class BasePage {
     return this.page.locator(`tr:has-text("${text}")`)
   }
 
+  getRowByCellText(text, columnIndex) {
+    const quotedText = JSON.stringify(String(text))
+    const columnNumber = Number(columnIndex) + 1
+    return this.page.locator(`tbody tr:has(td:nth-child(${columnNumber}):has-text(${quotedText}))`)
+  }
+
+  async getCheckboxByCellText(text, columnIndex) {
+    const row = await this.getRowByCellText(text, columnIndex)
+    return row.locator(SELECTORS.TABLE_CELL).nth(COLUMN_INDEXES.CHECKBOX).locator(SELECTORS.TABLE_CELL_CHECKBOX)
+  }
+
   async getCheckboxByText(text) {
     const row = await this.getRowByText(text)
     return row.locator(SELECTORS.TABLE_CELL).nth(COLUMN_INDEXES.CHECKBOX).locator(SELECTORS.TABLE_CELL_CHECKBOX)
+  }
+
+  async deleteByCellText(text, columnIndex) {
+    const initialCount = await this.getCount()
+    const checkbox = await this.getCheckboxByCellText(text, columnIndex)
+    await checkbox.check()
+    await this.config.deleteButtonLocator.click()
+    await this.page.waitForFunction(
+      (expectedCount, selector) => {
+        const rows = document.querySelectorAll(selector)
+        return rows.length < expectedCount
+      },
+      initialCount,
+      SELECTORS.TABLE_BODY_ROW,
+      { timeout: TIMEOUTS.MEDIUM },
+    )
   }
 
   async deleteByText(text) {
