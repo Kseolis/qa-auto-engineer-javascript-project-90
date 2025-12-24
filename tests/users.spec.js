@@ -2,7 +2,16 @@ import { test, expect } from '@playwright/test'
 import { UsersPage } from './pages/UsersPage.js'
 import { generateUserData, generateEditedUserData } from './helpers/testData.js'
 import { loginAsValidUser } from './helpers/authHelper.js'
-import { TIMEOUTS, TEST_CONSTANTS } from './helpers/constants.js'
+import {
+  verifyCreateFormVisible,
+  verifyEntityCreated,
+  verifyListDisplayed,
+  verifyRowsData,
+  verifyEntityEdited,
+  verifyEntityDeleted,
+  verifyBulkDelete,
+  verifyEditFormVisible,
+} from './helpers/testHelpers.js'
 
 test.beforeEach(async ({ page }) => {
   await loginAsValidUser(page)
@@ -16,10 +25,7 @@ test.describe('Создание пользователей', () => {
     await usersPage.clickCreate()
 
     const form = await usersPage.isCreateFormVisible()
-    await expect.soft(form.email).toBeVisible()
-    await expect.soft(form.firstName).toBeVisible()
-    await expect.soft(form.lastName).toBeVisible()
-    await expect(form.saveButton).toBeVisible()
+    await verifyCreateFormVisible(form, ['email', 'firstName', 'lastName'])
   })
 
   test('создание нового пользователя с валидными данными', async ({ page }) => {
@@ -28,8 +34,12 @@ test.describe('Создание пользователей', () => {
 
     const { initialCount } = await usersPage.createUser(userData)
 
-    await expect.poll(() => usersPage.getUserCount(), { timeout: TIMEOUTS.MEDIUM }).toBeGreaterThan(initialCount)
-    await expect.poll(() => usersPage.isUserVisible(userData.email), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
+    await verifyEntityCreated(
+      usersPage,
+      initialCount,
+      userData.email,
+      (email) => usersPage.isUserVisible(email),
+    )
 
     const verification = await usersPage.verifyUserData(userData.email, userData)
     await expect.soft(verification.email).toBe(true)
@@ -41,28 +51,16 @@ test.describe('Создание пользователей', () => {
 test.describe('Просмотр списка пользователей', () => {
   test('список пользователей отображается полностью и корректно', async ({ page }) => {
     const usersPage = new UsersPage(page)
-
-    await usersPage.goto()
-
-    await expect(usersPage.usersTable).toBeVisible()
-    const userCount = await usersPage.getUserCount()
-    await expect(userCount).toBeGreaterThan(0)
+    await verifyListDisplayed(usersPage)
   })
 
   test('отображается основная информация о каждом пользователе', async ({ page }) => {
     const usersPage = new UsersPage(page)
 
     await usersPage.goto()
-
     const rows = await usersPage.getAllUserRows()
-    await expect(rows.length).toBeGreaterThan(0)
 
-    for (let i = 0; i < Math.min(rows.length, TEST_CONSTANTS.MAX_ROWS_TO_CHECK); i++) {
-      const userData = await usersPage.getUserRowData(rows[i])
-      await expect.soft(userData.email).toBeTruthy()
-      await expect.soft(userData.firstName).toBeTruthy()
-      await expect.soft(userData.lastName).toBeTruthy()
-    }
+    await verifyRowsData(rows, (row) => usersPage.getUserRowData(row), ['email', 'firstName', 'lastName'])
   })
 })
 
@@ -75,11 +73,8 @@ test.describe('Редактирование пользователей', () => {
     await expect(firstUserEmail).toBeTruthy()
 
     await usersPage.clickEditUser(firstUserEmail)
-
     const form = await usersPage.isEditFormVisible()
-    await expect.soft(form.email).toBeVisible({ timeout: TIMEOUTS.SHORT })
-    await expect.soft(form.firstName).toBeVisible({ timeout: TIMEOUTS.SHORT })
-    await expect.soft(form.lastName).toBeVisible({ timeout: TIMEOUTS.SHORT })
+    await verifyEditFormVisible(form, ['email', 'firstName', 'lastName'])
   })
 
   test('изменение данных пользователя сохраняется корректно', async ({ page }) => {
@@ -91,13 +86,13 @@ test.describe('Редактирование пользователей', () => {
     await expect(firstUserEmail).toBeTruthy()
 
     await usersPage.editUser(firstUserEmail, editedData)
-
-    await expect.poll(() => usersPage.isUserVisible(editedData.email), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
-
-    const verification = await usersPage.verifyUserData(editedData.email, editedData)
-    await expect.soft(verification.email).toBe(true)
-    await expect.soft(verification.firstName).toBe(true)
-    await expect.soft(verification.lastName).toBe(true)
+    await verifyEntityEdited(
+      usersPage,
+      editedData.email,
+      (email) => usersPage.isUserVisible(email),
+      (email, data) => usersPage.verifyUserData(email, data),
+      editedData,
+    )
   })
 
   test('валидация данных при редактировании пользователя', async ({ page }) => {
@@ -124,9 +119,12 @@ test.describe('Удаление пользователей', () => {
 
     const { initialCount, firstUserEmail } = await usersPage.deleteFirstUser()
 
-    await expect(initialCount).toBeGreaterThan(0)
-    await expect.poll(() => usersPage.getUserCount()).toBeLessThan(initialCount)
-    await expect.poll(() => usersPage.isUserVisible(firstUserEmail)).toBe(false)
+    await verifyEntityDeleted(
+      usersPage,
+      initialCount,
+      firstUserEmail,
+      (email) => usersPage.isUserVisible(email),
+    )
   })
 })
 
@@ -145,8 +143,6 @@ test.describe('Массовое удаление пользователей', ()
 
     await usersPage.goto()
     const initialCount = await usersPage.getUserCount()
-    await usersPage.selectAllUsers()
-    await usersPage.deleteAllSelected()
-    await expect.poll(() => usersPage.getUserCount()).toBeLessThan(initialCount)
+    await verifyBulkDelete(usersPage, initialCount)
   })
 })

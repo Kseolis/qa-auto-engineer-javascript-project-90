@@ -9,13 +9,16 @@ test.describe('Tasks: чеклист-дополнения', () => {
     const loginPage = new LoginPage(page)
 
     await page.goto(URLS.TASKS)
-
     await expect.poll(() => loginPage.isLoginFormVisible(), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
   })
 
-  test('переход на Tasks через меню', async ({ page }) => {
-    await loginAsValidUser(page)
-    const tasksPage = new TasksPage(page)
+  test.describe('Авторизованные тесты', () => {
+    test.beforeEach(async ({ page }) => {
+      await loginAsValidUser(page)
+    })
+
+    test('переход на Tasks через меню', async ({ page }) => {
+      const tasksPage = new TasksPage(page)
 
     await page.goto(URLS.USERS)
     await expect(page.locator(SELECTORS.TABLE)).toBeVisible()
@@ -24,36 +27,34 @@ test.describe('Tasks: чеклист-дополнения', () => {
     await expect.poll(() => page.url().includes('/#/tasks'), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
   })
 
-  test('выбранные фильтры сохраняются после перезагрузки страницы', async ({ page }) => {
-    await loginAsValidUser(page)
-    const tasksPage = new TasksPage(page)
+    test('выбранные фильтры сохраняются после перезагрузки страницы', async ({ page }) => {
+      const tasksPage = new TasksPage(page)
 
     await tasksPage.goto()
     await expect(tasksPage.getTaskCardContainerByTitle('Task 2')).toBeVisible()
 
     await tasksPage.setFilterStatus('To Be Fixed')
-    await expect.poll(
-      () => tasksPage.getTaskCardContainerByTitle('Task 2').isVisible().catch(() => false),
-      { timeout: TIMEOUTS.MEDIUM },
-    ).toBe(false)
+      await expect.poll(
+        () => tasksPage.getTaskCardContainerByTitle('Task 2').isVisible().catch(() => false),
+        { timeout: TIMEOUTS.MEDIUM },
+      ).toBe(false)
 
-    await page.reload()
-    await tasksPage.goto()
+      await page.reload()
+      await tasksPage.goto()
 
-    await expect(page.getByRole('combobox', { name: /Status To Be Fixed/i })).toBeVisible()
-    await expect.poll(
-      () => tasksPage.getTaskCardContainerByTitle('Task 2').isVisible().catch(() => false),
-      { timeout: TIMEOUTS.MEDIUM },
-    ).toBe(false)
-    await expect.poll(
-      () => tasksPage.getTaskCardContainerByTitle('Task 1').isVisible().catch(() => false),
-      { timeout: TIMEOUTS.MEDIUM },
-    ).toBe(true)
-  })
+      await expect(page.getByRole('combobox', { name: /Status To Be Fixed/i })).toBeVisible()
+      await expect.poll(
+        () => tasksPage.getTaskCardContainerByTitle('Task 2').isVisible().catch(() => false),
+        { timeout: TIMEOUTS.MEDIUM },
+      ).toBe(false)
+      await expect.poll(
+        () => tasksPage.getTaskCardContainerByTitle('Task 1').isVisible().catch(() => false),
+        { timeout: TIMEOUTS.MEDIUM },
+      ).toBe(true)
+    })
 
-  test('drag&drop внутри одной колонки меняет порядок карточек', async ({ page }) => {
-    await loginAsValidUser(page)
-    const tasksPage = new TasksPage(page)
+    test('drag&drop внутри одной колонки меняет порядок карточек', async ({ page }) => {
+      const tasksPage = new TasksPage(page)
 
     await tasksPage.goto()
 
@@ -66,29 +67,27 @@ test.describe('Tasks: чеклист-дополнения', () => {
 
     await tasksPage.dragTaskToTask('Task 5', 'Task 11')
 
-    await expect.poll(async () => {
-      const after = await tasksPage.getTaskButtonNamesInColumn('Draft')
-      const afterTask11Index = after.findIndex(t => t.includes('Task 11'))
-      const afterTask5Index = after.findIndex(t => t.includes('Task 5'))
-      return afterTask5Index !== -1 && afterTask11Index !== -1 && afterTask5Index < afterTask11Index
-    }, { timeout: TIMEOUTS.MEDIUM }).toBe(true)
-  })
+      await expect.poll(async () => {
+        const after = await tasksPage.getTaskButtonNamesInColumn('Draft')
+        const afterTask11Index = after.findIndex(t => t.includes('Task 11'))
+        const afterTask5Index = after.findIndex(t => t.includes('Task 5'))
+        return afterTask5Index !== -1 && afterTask11Index !== -1 && afterTask5Index < afterTask11Index
+      }, { timeout: TIMEOUTS.MEDIUM }).toBe(true)
+    })
 
-  test('дроп вне колонок не меняет статус карточки', async ({ page }) => {
-    await loginAsValidUser(page)
-    const tasksPage = new TasksPage(page)
+    test('дроп вне колонок не меняет статус карточки', async ({ page }) => {
+      const tasksPage = new TasksPage(page)
 
     await tasksPage.goto()
     await expect.poll(() => tasksPage.isTaskVisibleInStatusColumn('Draft', 'Task 5'), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
 
     await tasksPage.dragTaskToCoordinates('Task 5', 5, 5)
 
-    await expect.poll(() => tasksPage.isTaskVisibleInStatusColumn('Draft', 'Task 5'), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
-  })
+      await expect.poll(() => tasksPage.isTaskVisibleInStatusColumn('Draft', 'Task 5'), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
+    })
 
-  test('Create: обязательные поля Assignee/Status не дают сохранить (валидация при submit)', async ({ page }) => {
-    await loginAsValidUser(page)
-    const tasksPage = new TasksPage(page)
+    test('Create: обязательные поля Assignee/Status не дают сохранить (валидация при submit)', async ({ page }) => {
+      const tasksPage = new TasksPage(page)
 
     await tasksPage.openCreateForm()
 
@@ -98,13 +97,12 @@ test.describe('Tasks: чеклист-дополнения', () => {
     await expect(saveButton).toBeEnabled()
     await saveButton.click()
 
-    await expect.poll(() => page.url().includes('/#/tasks/create'), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
-    await expect(tasksPage.getTitleInput()).toHaveValue('Task validation check')
-  })
+      await expect.poll(() => page.url().includes('/#/tasks/create'), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
+      await expect(tasksPage.getTitleInput()).toHaveValue('Task validation check')
+    })
 
-  test('Edit: изменение assignee и labels отражается на странице Show', async ({ page }) => {
-    await loginAsValidUser(page)
-    const tasksPage = new TasksPage(page)
+    test('Edit: изменение assignee и labels отражается на странице Show', async ({ page }) => {
+      const tasksPage = new TasksPage(page)
 
     await tasksPage.goto()
     await tasksPage.openTaskEditFromCard('Task 3')
@@ -116,27 +114,25 @@ test.describe('Tasks: чеклист-дополнения', () => {
     await tasksPage.goto()
     await tasksPage.openTaskShowFromCard('Task 3')
 
-    await expect(page.getByText('john@google.com', { exact: true })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'task' })).toBeVisible()
-  })
+      await expect(page.getByText('john@google.com', { exact: true })).toBeVisible()
+      await expect(page.getByRole('link', { name: 'task' })).toBeVisible()
+    })
 
-  test('Show: отображаются id/createdAt/assignee/labels (на примере Task 7)', async ({ page }) => {
-    await loginAsValidUser(page)
-    const tasksPage = new TasksPage(page)
+    test('Show: отображаются id/createdAt/assignee/labels (на примере Task 7)', async ({ page }) => {
+      const tasksPage = new TasksPage(page)
 
     await tasksPage.goto()
     await tasksPage.openTaskShowFromCard('Task 7')
 
     await expect.poll(() => page.url().includes('/#/tasks/7'), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
-    await expect(page.getByText('7', { exact: true })).toBeVisible()
-    await expect(page.getByText('8/4/2023', { exact: true })).toBeVisible()
-    await expect(page.getByText('jane@gmail.com', { exact: true })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'bug' })).toBeVisible()
-  })
+      await expect(page.getByText('7', { exact: true })).toBeVisible()
+      await expect(page.getByText('8/4/2023', { exact: true })).toBeVisible()
+      await expect(page.getByText('jane@gmail.com', { exact: true })).toBeVisible()
+      await expect(page.getByRole('link', { name: 'bug' })).toBeVisible()
+    })
 
-  test('Export: по кнопке Export начинается загрузка файла', async ({ page }) => {
-    await loginAsValidUser(page)
-    const tasksPage = new TasksPage(page)
+    test('Export: по кнопке Export начинается загрузка файла', async ({ page }) => {
+      const tasksPage = new TasksPage(page)
 
     await tasksPage.goto()
 
@@ -144,6 +140,7 @@ test.describe('Tasks: чеклист-дополнения', () => {
     await page.locator(SELECTORS.EXPORT_BUTTON).first().click()
     const download = await downloadPromise
 
-    await expect(download.suggestedFilename().length).toBeGreaterThan(0)
+      await expect(download.suggestedFilename().length).toBeGreaterThan(0)
+    })
   })
 })

@@ -16,10 +16,6 @@ export class UsersPage extends BasePage {
     this.usersTable = usersTable
   }
 
-  async clickCreate() {
-    await super.clickCreate()
-  }
-
   async fillUserForm(userData) {
     const emailInput = this.page.locator(SELECTORS.USER_EMAIL_INPUT)
     const firstNameInput = this.page.locator(SELECTORS.USER_FIRST_NAME_INPUT)
@@ -58,38 +54,26 @@ export class UsersPage extends BasePage {
     await super.deleteByCellText(email, COLUMN_INDEXES.EMAIL)
   }
 
-  async selectAllUsers() {
-    await super.selectAll()
-  }
-
-  async deleteAllSelected() {
-    await super.deleteAllSelected()
-  }
-
   async getUserCount() {
     return await super.getCount()
   }
 
   async getUserData(email) {
     const row = await this.getUserRowByEmail(email)
-    const cells = await row.locator(SELECTORS.TABLE_CELL).all()
-
-    return {
-      id: (await cells[COLUMN_INDEXES.ID]?.textContent())?.trim(),
-      email: (await cells[COLUMN_INDEXES.EMAIL]?.textContent())?.trim(),
-      firstName: (await cells[COLUMN_INDEXES.FIRST_NAME]?.textContent())?.trim(),
-      lastName: (await cells[COLUMN_INDEXES.LAST_NAME]?.textContent())?.trim(),
-    }
+    return await super.getRowDataByColumns(row, {
+      id: COLUMN_INDEXES.ID,
+      email: COLUMN_INDEXES.EMAIL,
+      firstName: COLUMN_INDEXES.FIRST_NAME,
+      lastName: COLUMN_INDEXES.LAST_NAME,
+    })
   }
 
   async isUserVisible(email) {
-    const row = await this.getUserRowByEmail(email)
-    return await row.isVisible().catch(() => false)
+    return await super.isEntityVisibleByColumn(email, COLUMN_INDEXES.EMAIL)
   }
 
   async getFirstUserEmail() {
-    const firstRow = this.page.locator(SELECTORS.TABLE_BODY_ROW).first()
-    return await firstRow.locator(SELECTORS.TABLE_CELL).nth(COLUMN_INDEXES.EMAIL).textContent()
+    return await super.getFirstCellValue(COLUMN_INDEXES.EMAIL)
   }
 
   async isCreateFormVisible() {
@@ -159,23 +143,20 @@ export class UsersPage extends BasePage {
   }
 
   async getUserRowData(row) {
-    const cells = await row.locator(SELECTORS.TABLE_CELL).all()
-    return {
-      email: await cells[COLUMN_INDEXES.EMAIL]?.textContent(),
-      firstName: await cells[COLUMN_INDEXES.FIRST_NAME]?.textContent(),
-      lastName: await cells[COLUMN_INDEXES.LAST_NAME]?.textContent(),
-    }
+    const data = await super.getRowDataByColumns(row, {
+      email: COLUMN_INDEXES.EMAIL,
+      firstName: COLUMN_INDEXES.FIRST_NAME,
+      lastName: COLUMN_INDEXES.LAST_NAME,
+    })
+    return { email: data.email, firstName: data.firstName, lastName: data.lastName }
   }
 
-  async areAllCheckboxesSelected() {
-    return await super.areAllCheckboxesSelected()
+  async selectAllUsers() {
+    await super.selectAll()
   }
 
   async deleteFirstUser() {
-    await this.goto()
-    const initialCount = await this.getUserCount()
-    const firstUserEmail = await this.getFirstUserEmail()
-    await this.deleteUser(firstUserEmail)
-    return { initialCount, firstUserEmail }
+    const result = await super.deleteFirstEntity(COLUMN_INDEXES.EMAIL, email => this.deleteUser(email))
+    return { initialCount: result.initialCount, firstUserEmail: result.firstIdentifier }
   }
 }

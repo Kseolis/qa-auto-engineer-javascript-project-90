@@ -16,10 +16,6 @@ export class StatusesPage extends BasePage {
     this.statusesTable = statusesTable
   }
 
-  async clickCreate() {
-    await super.clickCreate()
-  }
-
   async fillStatusForm(statusData) {
     const nameInput = this.page.locator(SELECTORS.STATUS_NAME_INPUT)
     const slugInput = this.page.locator(SELECTORS.STATUS_SLUG_INPUT)
@@ -54,37 +50,25 @@ export class StatusesPage extends BasePage {
     await super.deleteByCellText(slug, COLUMN_INDEXES.SLUG)
   }
 
-  async selectAllStatuses() {
-    await super.selectAll()
-  }
-
-  async deleteAllSelected() {
-    await super.deleteAllSelected()
-  }
-
   async getStatusCount() {
     return await super.getCount()
   }
 
   async getStatusData(slug) {
     const row = await this.getStatusRowBySlug(slug)
-    const cells = await row.locator(SELECTORS.TABLE_CELL).all()
-
-    return {
-      id: (await cells[COLUMN_INDEXES.ID]?.textContent())?.trim(),
-      name: (await cells[COLUMN_INDEXES.NAME]?.textContent())?.trim(),
-      slug: (await cells[COLUMN_INDEXES.SLUG]?.textContent())?.trim(),
-    }
+    return await super.getRowDataByColumns(row, {
+      id: COLUMN_INDEXES.ID,
+      name: COLUMN_INDEXES.NAME,
+      slug: COLUMN_INDEXES.SLUG,
+    })
   }
 
   async isStatusVisible(slug) {
-    const row = await this.getStatusRowBySlug(slug)
-    return await row.isVisible().catch(() => false)
+    return await super.isEntityVisibleByColumn(slug, COLUMN_INDEXES.SLUG)
   }
 
   async getFirstStatusSlug() {
-    const firstRow = this.page.locator(SELECTORS.TABLE_BODY_ROW).first()
-    return await firstRow.locator(SELECTORS.TABLE_CELL).nth(COLUMN_INDEXES.SLUG).textContent()
+    return await super.getFirstCellValue(COLUMN_INDEXES.SLUG)
   }
 
   async isCreateFormVisible() {
@@ -135,22 +119,19 @@ export class StatusesPage extends BasePage {
   }
 
   async getStatusRowData(row) {
-    const cells = await row.locator(SELECTORS.TABLE_CELL).all()
-    return {
-      name: await cells[COLUMN_INDEXES.NAME]?.textContent(),
-      slug: await cells[COLUMN_INDEXES.SLUG]?.textContent(),
-    }
+    const data = await super.getRowDataByColumns(row, {
+      name: COLUMN_INDEXES.NAME,
+      slug: COLUMN_INDEXES.SLUG,
+    })
+    return { name: data.name, slug: data.slug }
   }
 
-  async areAllCheckboxesSelected() {
-    return await super.areAllCheckboxesSelected()
+  async selectAllStatuses() {
+    await super.selectAll()
   }
 
   async deleteFirstStatus() {
-    await this.goto()
-    const initialCount = await this.getStatusCount()
-    const firstStatusSlug = await this.getFirstStatusSlug()
-    await this.deleteStatus(firstStatusSlug)
-    return { initialCount, firstStatusSlug }
+    const result = await super.deleteFirstEntity(COLUMN_INDEXES.SLUG, slug => this.deleteStatus(slug))
+    return { initialCount: result.initialCount, firstStatusSlug: result.firstIdentifier }
   }
 }

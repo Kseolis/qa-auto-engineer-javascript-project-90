@@ -2,7 +2,16 @@ import { test, expect } from '@playwright/test'
 import { StatusesPage } from './pages/StatusesPage.js'
 import { generateStatusData, generateEditedStatusData } from './helpers/testData.js'
 import { loginAsValidUser } from './helpers/authHelper.js'
-import { TIMEOUTS, TEST_CONSTANTS } from './helpers/constants.js'
+import {
+  verifyCreateFormVisible,
+  verifyEntityCreated,
+  verifyListDisplayed,
+  verifyRowsData,
+  verifyEntityEdited,
+  verifyEntityDeleted,
+  verifyBulkDelete,
+  verifyEditFormVisible,
+} from './helpers/testHelpers.js'
 
 test.beforeEach(async ({ page }) => {
   await loginAsValidUser(page)
@@ -16,9 +25,7 @@ test.describe('Создание статусов', () => {
     await statusesPage.clickCreate()
 
     const form = await statusesPage.isCreateFormVisible()
-    await expect.soft(form.name).toBeVisible()
-    await expect.soft(form.slug).toBeVisible()
-    await expect(form.saveButton).toBeVisible()
+    await verifyCreateFormVisible(form, ['name', 'slug'])
   })
 
   test('создание нового статуса с валидными данными', async ({ page }) => {
@@ -27,8 +34,12 @@ test.describe('Создание статусов', () => {
 
     const { initialCount } = await statusesPage.createStatus(statusData)
 
-    await expect.poll(() => statusesPage.getStatusCount(), { timeout: TIMEOUTS.MEDIUM }).toBeGreaterThan(initialCount)
-    await expect.poll(() => statusesPage.isStatusVisible(statusData.slug), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
+    await verifyEntityCreated(
+      statusesPage,
+      initialCount,
+      statusData.slug,
+      (slug) => statusesPage.isStatusVisible(slug),
+    )
 
     const verification = await statusesPage.verifyStatusData(statusData.slug, statusData)
     await expect.soft(verification.name).toBe(true)
@@ -39,27 +50,16 @@ test.describe('Создание статусов', () => {
 test.describe('Просмотр списка статусов', () => {
   test('список статусов отображается полностью и корректно', async ({ page }) => {
     const statusesPage = new StatusesPage(page)
-
-    await statusesPage.goto()
-
-    await expect(statusesPage.statusesTable).toBeVisible()
-    const statusCount = await statusesPage.getStatusCount()
-    await expect(statusCount).toBeGreaterThan(0)
+    await verifyListDisplayed(statusesPage)
   })
 
   test('отображается основная информация о каждом статусе', async ({ page }) => {
     const statusesPage = new StatusesPage(page)
 
     await statusesPage.goto()
-
     const rows = await statusesPage.getAllStatusRows()
-    await expect(rows.length).toBeGreaterThan(0)
 
-    for (let i = 0; i < Math.min(rows.length, TEST_CONSTANTS.MAX_ROWS_TO_CHECK); i++) {
-      const statusData = await statusesPage.getStatusRowData(rows[i])
-      await expect.soft(statusData.name).toBeTruthy()
-      await expect.soft(statusData.slug).toBeTruthy()
-    }
+    await verifyRowsData(rows, (row) => statusesPage.getStatusRowData(row), ['name', 'slug'])
   })
 })
 
@@ -72,10 +72,8 @@ test.describe('Редактирование статусов', () => {
     await expect(firstStatusSlug).toBeTruthy()
 
     await statusesPage.clickEditStatus(firstStatusSlug)
-
     const form = await statusesPage.isEditFormVisible()
-    await expect.soft(form.name).toBeVisible({ timeout: TIMEOUTS.SHORT })
-    await expect.soft(form.slug).toBeVisible({ timeout: TIMEOUTS.SHORT })
+    await verifyEditFormVisible(form, ['name', 'slug'])
   })
 
   test('изменение данных статуса сохраняется корректно', async ({ page }) => {
@@ -87,12 +85,13 @@ test.describe('Редактирование статусов', () => {
     await expect(firstStatusSlug).toBeTruthy()
 
     await statusesPage.editStatus(firstStatusSlug, editedData)
-
-    await expect.poll(() => statusesPage.isStatusVisible(editedData.slug), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
-
-    const verification = await statusesPage.verifyStatusData(editedData.slug, editedData)
-    await expect.soft(verification.name).toBe(true)
-    await expect.soft(verification.slug).toBe(true)
+    await verifyEntityEdited(
+      statusesPage,
+      editedData.slug,
+      (slug) => statusesPage.isStatusVisible(slug),
+      (slug, data) => statusesPage.verifyStatusData(slug, data),
+      editedData,
+    )
   })
 })
 
@@ -102,9 +101,12 @@ test.describe('Удаление статусов', () => {
 
     const { initialCount, firstStatusSlug } = await statusesPage.deleteFirstStatus()
 
-    await expect(initialCount).toBeGreaterThan(0)
-    await expect.poll(() => statusesPage.getStatusCount()).toBeLessThan(initialCount)
-    await expect.poll(() => statusesPage.isStatusVisible(firstStatusSlug)).toBe(false)
+    await verifyEntityDeleted(
+      statusesPage,
+      initialCount,
+      firstStatusSlug,
+      (slug) => statusesPage.isStatusVisible(slug),
+    )
   })
 })
 
@@ -123,8 +125,6 @@ test.describe('Массовое удаление статусов', () => {
 
     await statusesPage.goto()
     const initialCount = await statusesPage.getStatusCount()
-    await statusesPage.selectAllStatuses()
-    await statusesPage.deleteAllSelected()
-    await expect.poll(() => statusesPage.getStatusCount()).toBeLessThan(initialCount)
+    await verifyBulkDelete(statusesPage, initialCount)
   })
 })

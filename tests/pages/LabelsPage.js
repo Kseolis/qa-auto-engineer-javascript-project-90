@@ -16,10 +16,6 @@ export class LabelsPage extends BasePage {
     this.labelsTable = labelsTable
   }
 
-  async clickCreate() {
-    await super.clickCreate()
-  }
-
   async fillLabelForm(labelData) {
     const nameInput = this.page.locator(SELECTORS.LABEL_NAME_INPUT)
 
@@ -46,36 +42,24 @@ export class LabelsPage extends BasePage {
     await super.deleteByCellText(name, COLUMN_INDEXES.NAME)
   }
 
-  async selectAllLabels() {
-    await super.selectAll()
-  }
-
-  async deleteAllSelected() {
-    await super.deleteAllSelected()
-  }
-
   async getLabelCount() {
     return await super.getCount()
   }
 
   async getLabelData(name) {
     const row = await this.getLabelRowByName(name)
-    const cells = await row.locator(SELECTORS.TABLE_CELL).all()
-
-    return {
-      id: (await cells[COLUMN_INDEXES.ID]?.textContent())?.trim(),
-      name: (await cells[COLUMN_INDEXES.NAME]?.textContent())?.trim(),
-    }
+    return await super.getRowDataByColumns(row, {
+      id: COLUMN_INDEXES.ID,
+      name: COLUMN_INDEXES.NAME,
+    })
   }
 
   async isLabelVisible(name) {
-    const row = await this.getLabelRowByName(name)
-    return await row.isVisible().catch(() => false)
+    return await super.isEntityVisibleByColumn(name, COLUMN_INDEXES.NAME)
   }
 
   async getFirstLabelName() {
-    const firstRow = this.page.locator(SELECTORS.TABLE_BODY_ROW).first()
-    return await firstRow.locator(SELECTORS.TABLE_CELL).nth(COLUMN_INDEXES.NAME).textContent()
+    return await super.getFirstCellValue(COLUMN_INDEXES.NAME)
   }
 
   async isCreateFormVisible() {
@@ -121,21 +105,18 @@ export class LabelsPage extends BasePage {
   }
 
   async getLabelRowData(row) {
-    const cells = await row.locator(SELECTORS.TABLE_CELL).all()
-    return {
-      name: await cells[COLUMN_INDEXES.NAME]?.textContent(),
-    }
+    const data = await super.getRowDataByColumns(row, {
+      name: COLUMN_INDEXES.NAME,
+    })
+    return { name: data.name }
   }
 
-  async areAllCheckboxesSelected() {
-    return await super.areAllCheckboxesSelected()
+  async selectAllLabels() {
+    await super.selectAll()
   }
 
   async deleteFirstLabel() {
-    await this.goto()
-    const initialCount = await this.getLabelCount()
-    const firstLabelName = await this.getFirstLabelName()
-    await this.deleteLabel(firstLabelName)
-    return { initialCount, firstLabelName }
+    const result = await super.deleteFirstEntity(COLUMN_INDEXES.NAME, name => this.deleteLabel(name))
+    return { initialCount: result.initialCount, firstLabelName: result.firstIdentifier }
   }
 }

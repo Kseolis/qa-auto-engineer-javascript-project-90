@@ -125,4 +125,54 @@ export class BasePage {
     await this.page.goto(`${this.config.url}/${id}${URLS.EDIT_SUFFIX}`)
     await this.config.firstInputLocator.waitFor({ state: 'visible' })
   }
+
+  /**
+   * Общий метод для получения значения из первой строки по индексу колонки
+   * @param {number} columnIndex - Индекс колонки
+   * @returns {Promise<string>} Значение из ячейки
+   */
+  async getFirstCellValue(columnIndex) {
+    const firstRow = this.page.locator(SELECTORS.TABLE_BODY_ROW).first()
+    return await firstRow.locator(SELECTORS.TABLE_CELL).nth(columnIndex).textContent()
+  }
+
+  /**
+   * Общий метод для получения данных строки
+   * @param {Object} row - Локатор строки
+   * @param {Array<number>} columnIndexes - Массив индексов колонок для извлечения
+   * @returns {Promise<Object>} Объект с данными строки
+   */
+  async getRowDataByColumns(row, columnIndexes) {
+    const cells = await row.locator(SELECTORS.TABLE_CELL).all()
+    const data = {}
+    for (const [key, index] of Object.entries(columnIndexes)) {
+      data[key] = (await cells[index]?.textContent())?.trim()
+    }
+    return data
+  }
+
+  /**
+   * Общий метод для проверки видимости сущности по тексту в колонке
+   * @param {string} text - Текст для поиска
+   * @param {number} columnIndex - Индекс колонки
+   * @returns {Promise<boolean>} Видима ли сущность
+   */
+  async isEntityVisibleByColumn(text, columnIndex) {
+    const row = await this.getRowLocatorByCellText(text, columnIndex)
+    return await row.isVisible().catch(() => false)
+  }
+
+  /**
+   * Общий метод для удаления первой сущности
+   * @param {number} columnIndex - Индекс колонки для получения идентификатора
+   * @param {Function} deleteMethod - Метод удаления сущности
+   * @returns {Promise<Object>} Объект с initialCount и идентификатором
+   */
+  async deleteFirstEntity(columnIndex, deleteMethod) {
+    await this.goto()
+    const initialCount = await this.getCount()
+    const firstIdentifier = await this.getFirstCellValue(columnIndex)
+    await deleteMethod(firstIdentifier)
+    return { initialCount, firstIdentifier }
+  }
 }

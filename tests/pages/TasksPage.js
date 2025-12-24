@@ -50,7 +50,7 @@ export class TasksPage {
   }
 
   getTaskCardContainerByTitle(title) {
-    const escaped = title.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const escaped = title.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)
     return this.page.getByRole('button', { name: new RegExp(String.raw`\b${escaped}\b`) }).first()
   }
 
@@ -194,5 +194,70 @@ export class TasksPage {
   async openTaskShowFromCard(title) {
     const container = this.getTaskCardContainerByTitle(title)
     await container.getByRole('link', { name: 'Show' }).first().click()
+  }
+
+  /**
+   * Возвращает функцию для проверки видимости карточки задачи
+   * @param {string} title - Название задачи
+   * @returns {Function} Функция для использования с expect.poll
+   */
+  getTaskCardVisibilityChecker(title) {
+    return () => this.getTaskCardContainerByTitle(title).isVisible().catch(() => false)
+  }
+
+  /**
+   * Возвращает функцию для проверки видимости задачи в колонке статуса
+   * @param {string} statusName - Название статуса
+   * @param {string} title - Название задачи
+   * @returns {Function} Функция для использования с expect.poll
+   */
+  getTaskInStatusColumnChecker(statusName, title) {
+    return () => this.isTaskVisibleInStatusColumn(statusName, title)
+  }
+
+  /**
+   * Устанавливает несколько фильтров одновременно
+   * @param {Object} filters - Объект с фильтрами {assignee, status, label}
+   */
+  async setFilters(filters) {
+    if (filters.assignee) {
+      await this.setFilterAssignee(filters.assignee)
+    }
+    if (filters.status) {
+      await this.setFilterStatus(filters.status)
+    }
+    if (filters.label) {
+      await this.setFilterLabel(filters.label)
+    }
+  }
+
+  /**
+   * Создает задачу с полными данными
+   * @param {Object} taskData - Данные задачи {title, content}
+   * @param {Object} options - Опции {assignee, status, labels}
+   */
+  async createTaskWithOptions(taskData, options = {}) {
+    await this.openCreateForm()
+    if (options.assignee) {
+      await this.setFormAssignee(options.assignee)
+    }
+    if (options.status) {
+      await this.setFormStatus(options.status)
+    }
+    if (options.labels) {
+      await this.setFormLabels(options.labels)
+    }
+    await this.fillTaskForm(taskData)
+    await this.saveTask()
+    await this.goto()
+  }
+
+  /**
+   * Возвращает локаторы для колонок статусов
+   * @param {Array<string>} statuses - Массив статусов
+   * @returns {Array} Массив локаторов
+   */
+  getStatusColumnLocators(statuses) {
+    return statuses.map(status => this.page.getByText(status, { exact: true }))
   }
 }

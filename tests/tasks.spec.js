@@ -14,11 +14,10 @@ test.describe('Tasks: канбан-доска', () => {
       const tasksPage = new TasksPage(page)
       await tasksPage.goto()
 
-      await expect(page.getByText('Draft', { exact: true })).toBeVisible()
-      await expect(page.getByText('To Review', { exact: true })).toBeVisible()
-      await expect(page.getByText('To Be Fixed', { exact: true })).toBeVisible()
-      await expect(page.getByText('To Publish', { exact: true })).toBeVisible()
-      await expect(page.getByText('Published', { exact: true })).toBeVisible()
+      const statusLocators = tasksPage.getStatusColumnLocators(['Draft', 'To Review', 'To Be Fixed', 'To Publish', 'Published'])
+      for (const locator of statusLocators) {
+        await expect(locator).toBeVisible()
+      }
     })
 
     test('карточка задачи содержит title и content', async ({ page }) => {
@@ -38,15 +37,8 @@ test.describe('Tasks: канбан-доска', () => {
 
       await tasksPage.setFilterAssignee('john@google.com')
 
-      await expect.poll(
-        () => tasksPage.getTaskCardContainerByTitle('Task 1').isVisible().catch(() => false),
-        { timeout: TIMEOUTS.MEDIUM },
-      ).toBe(true)
-
-      await expect.poll(
-        () => tasksPage.getTaskCardContainerByTitle('Task 3').isVisible().catch(() => false),
-        { timeout: TIMEOUTS.MEDIUM },
-      ).toBe(false)
+      await expect.poll(tasksPage.getTaskCardVisibilityChecker('Task 1'), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
+      await expect.poll(tasksPage.getTaskCardVisibilityChecker('Task 3'), { timeout: TIMEOUTS.MEDIUM }).toBe(false)
     })
 
     test('фильтрация по статусу (колонке)', async ({ page }) => {
@@ -55,15 +47,8 @@ test.describe('Tasks: канбан-доска', () => {
 
       await tasksPage.setFilterStatus('To Be Fixed')
 
-      await expect.poll(
-        () => tasksPage.isTaskVisibleInStatusColumn('To Be Fixed', 'Task 1'),
-        { timeout: TIMEOUTS.MEDIUM },
-      ).toBe(true)
-
-      await expect.poll(
-        () => tasksPage.getTaskCardContainerByTitle('Task 2').isVisible().catch(() => false),
-        { timeout: TIMEOUTS.MEDIUM },
-      ).toBe(false)
+      await expect.poll(tasksPage.getTaskInStatusColumnChecker('To Be Fixed', 'Task 1'), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
+      await expect.poll(tasksPage.getTaskCardVisibilityChecker('Task 2'), { timeout: TIMEOUTS.MEDIUM }).toBe(false)
     })
 
     test('фильтрация по метке (label)', async ({ page }) => {
@@ -72,33 +57,18 @@ test.describe('Tasks: канбан-доска', () => {
 
       await tasksPage.setFilterLabel('bug')
 
-      await expect.poll(
-        () => tasksPage.getTaskCardContainerByTitle('Task 7').isVisible().catch(() => false),
-        { timeout: TIMEOUTS.MEDIUM },
-      ).toBe(true)
-
-      await expect.poll(
-        () => tasksPage.getTaskCardContainerByTitle('Task 2').isVisible().catch(() => false),
-        { timeout: TIMEOUTS.MEDIUM },
-      ).toBe(false)
+      await expect.poll(tasksPage.getTaskCardVisibilityChecker('Task 7'), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
+      await expect.poll(tasksPage.getTaskCardVisibilityChecker('Task 2'), { timeout: TIMEOUTS.MEDIUM }).toBe(false)
     })
 
     test('комбинация фильтров (assignee + status)', async ({ page }) => {
       const tasksPage = new TasksPage(page)
       await tasksPage.goto()
 
-      await tasksPage.setFilterAssignee('john@google.com')
-      await tasksPage.setFilterStatus('Draft')
+      await tasksPage.setFilters({ assignee: 'john@google.com', status: 'Draft' })
 
-      await expect.poll(
-        () => tasksPage.getTaskCardContainerByTitle('Task 5').isVisible().catch(() => false),
-        { timeout: TIMEOUTS.MEDIUM },
-      ).toBe(true)
-
-      await expect.poll(
-        () => tasksPage.getTaskCardContainerByTitle('Task 7').isVisible().catch(() => false),
-        { timeout: TIMEOUTS.MEDIUM },
-      ).toBe(false)
+      await expect.poll(tasksPage.getTaskCardVisibilityChecker('Task 5'), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
+      await expect.poll(tasksPage.getTaskCardVisibilityChecker('Task 7'), { timeout: TIMEOUTS.MEDIUM }).toBe(false)
     })
   })
 
@@ -107,32 +77,18 @@ test.describe('Tasks: канбан-доска', () => {
       const tasksPage = new TasksPage(page)
       await tasksPage.goto()
 
-      await expect.poll(
-        () => tasksPage.isTaskVisibleInStatusColumn('Draft', 'Task 5'),
-        { timeout: TIMEOUTS.MEDIUM },
-      ).toBe(true)
+      await expect.poll(tasksPage.getTaskInStatusColumnChecker('Draft', 'Task 5'), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
 
       await tasksPage.dragTaskToStatus('Task 5', 'To Review')
 
-      await expect.poll(
-        () => tasksPage.isTaskVisibleInStatusColumn('To Review', 'Task 5'),
-        { timeout: TIMEOUTS.MEDIUM },
-      ).toBe(true)
-
-      await expect.poll(
-        () => tasksPage.isTaskVisibleInStatusColumn('Draft', 'Task 5'),
-        { timeout: TIMEOUTS.MEDIUM },
-      ).toBe(false)
+      await expect.poll(tasksPage.getTaskInStatusColumnChecker('To Review', 'Task 5'), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
+      await expect.poll(tasksPage.getTaskInStatusColumnChecker('Draft', 'Task 5'), { timeout: TIMEOUTS.MEDIUM }).toBe(false)
 
       await page.goto(URLS.USERS)
       await expect(page.locator(SELECTORS.TABLE)).toBeVisible()
 
       await tasksPage.goto()
-
-      await expect.poll(
-        () => tasksPage.isTaskVisibleInStatusColumn('To Review', 'Task 5'),
-        { timeout: TIMEOUTS.MEDIUM },
-      ).toBe(true)
+      await expect.poll(tasksPage.getTaskInStatusColumnChecker('To Review', 'Task 5'), { timeout: TIMEOUTS.MEDIUM }).toBe(true)
     })
   })
 
@@ -157,17 +113,14 @@ test.describe('Tasks: канбан-доска', () => {
       const tasksPage = new TasksPage(page)
       const taskData = generateTaskData()
 
-      await tasksPage.openCreateForm()
-      await tasksPage.setFormAssignee('john@google.com')
-      await tasksPage.setFormStatus('Draft')
-      await tasksPage.setFormLabels(['bug'])
-      await tasksPage.fillTaskForm(taskData)
-      await tasksPage.saveTask()
-
-      await tasksPage.goto()
+      await tasksPage.createTaskWithOptions(taskData, {
+        assignee: 'john@google.com',
+        status: 'Draft',
+        labels: ['bug'],
+      })
 
       await expect.poll(
-        () => tasksPage.isTaskVisibleInStatusColumn('Draft', taskData.title),
+        tasksPage.getTaskInStatusColumnChecker('Draft', taskData.title),
         { timeout: TIMEOUTS.LONG },
       ).toBe(true)
     })
@@ -185,9 +138,8 @@ test.describe('Tasks: канбан-доска', () => {
       await tasksPage.saveTask()
 
       await tasksPage.goto()
-
       await expect.poll(
-        () => tasksPage.isTaskVisibleInStatusColumn('To Publish', edited.title),
+        tasksPage.getTaskInStatusColumnChecker('To Publish', edited.title),
         { timeout: TIMEOUTS.LONG },
       ).toBe(true)
     })
