@@ -10,6 +10,8 @@ export const COLUMN_INDEXES = {
 
 export const URLS = {
   HOME: '/',
+  TASKS: '/#/tasks',
+  TASKS_CREATE: '/#/tasks/create',
   USERS: '/#/users',
   USERS_CREATE: '/#/users/create',
   STATUSES: '/#/task_statuses',
@@ -35,6 +37,11 @@ export const SELECTORS = {
   STATUS_NAME_INPUT: 'input[name="name"]',
   STATUS_SLUG_INPUT: 'input[name="slug"]',
   LABEL_NAME_INPUT: 'input[name="name"]',
+  TASK_TITLE_INPUT: 'input[name="title"]',
+  TASK_CONTENT_INPUT: 'textarea[name="content"], input[name="content"]',
+  TASK_FILTER_ASSIGNEE_INPUT: 'input[name="assignee_id"]',
+  TASK_FILTER_STATUS_INPUT: 'input[name="status_id"]',
+  TASK_FILTER_LABEL_INPUT: 'input[name="label_id"]',
   LOGIN_USERNAME_INPUT: 'input[name="username"]',
   LOGIN_PASSWORD_INPUT: 'input[type="password"]',
   LOGIN_SUBMIT_BUTTON: 'button[type="submit"]:has-text("Sign in")',
@@ -44,6 +51,7 @@ export const SELECTORS = {
   STATUSES_CREATE_BUTTON: 'a[href="#/task_statuses/create"]',
   USERS_CREATE_BUTTON: 'a[href="#/users/create"]',
   LABELS_CREATE_BUTTON: 'a[href="#/labels/create"]',
+  TASKS_CREATE_BUTTON: 'a[href="#/tasks/create"]',
 }
 
 export const TIMEOUTS = {

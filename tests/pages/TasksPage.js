@@ -1,0 +1,198 @@
+import { SELECTORS, TIMEOUTS, URLS } from '../helpers/constants.js'
+
+export class TasksPage {
+  constructor(page) {
+    this.page = page
+  }
+
+  async openFromMenu() {
+    await this.page.getByRole('menuitem', { name: 'Tasks' }).click()
+    await this.page.getByRole('heading', { name: 'Tasks', level: 6 }).waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM })
+  }
+
+  async goto() {
+    await this.page.goto(URLS.TASKS)
+    await this.page.getByRole('heading', { name: 'Tasks', level: 6 }).first()
+      .waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM })
+  }
+
+  getCreateButton() {
+    return this.page.locator(SELECTORS.TASKS_CREATE_BUTTON).first()
+  }
+
+  getTitleInput() {
+    return this.page.locator(SELECTORS.TASK_TITLE_INPUT).first()
+  }
+
+  getContentInput() {
+    return this.page.locator(SELECTORS.TASK_CONTENT_INPUT).first()
+  }
+
+  async openCreateForm() {
+    await this.goto()
+    const createButton = this.getCreateButton()
+    await createButton.waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM })
+    await createButton.click()
+    await this.getTitleInput().waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM })
+  }
+
+  async fillTaskForm(taskData) {
+    if (taskData.title) {
+      await this.getTitleInput().fill(taskData.title)
+    }
+    if (taskData.content) {
+      await this.getContentInput().fill(taskData.content)
+    }
+  }
+
+  async saveTask() {
+    await this.page.locator(SELECTORS.SAVE_BUTTON).first().click()
+  }
+
+  getTaskCardContainerByTitle(title) {
+    const escaped = title.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    return this.page.getByRole('button', { name: new RegExp(String.raw`\b${escaped}\b`) }).first()
+  }
+
+  async getTaskCardDraggableByTitle(title) {
+    return this.getTaskCardContainerByTitle(title)
+  }
+
+  getStatusColumn(statusName) {
+    const header = this.page.getByRole('heading', { name: statusName, level: 6 }).first()
+    return header.locator('xpath=parent::*')
+  }
+
+  async isTaskVisibleInStatusColumn(statusName, title) {
+    const column = this.getStatusColumn(statusName)
+    return await column.getByText(title, { exact: true }).isVisible().catch(() => false)
+  }
+
+  async dragTaskToStatus(title, destinationStatusName) {
+    const source = await this.getTaskCardDraggableByTitle(title)
+    const destination = this.getStatusColumn(destinationStatusName)
+
+    const sourceBox = await source.boundingBox()
+    const destinationBox = await destination.boundingBox()
+
+    if (!sourceBox || !destinationBox) {
+      throw new Error('Не удалось получить координаты для drag&drop')
+    }
+
+    const startX = sourceBox.x + sourceBox.width / 2
+    const startY = sourceBox.y + Math.min(20, sourceBox.height / 2)
+
+    const endX = destinationBox.x + destinationBox.width / 2
+    const endY = destinationBox.y + Math.min(40, destinationBox.height / 2) + 20
+
+    await this.page.mouse.move(startX, startY)
+    await this.page.mouse.down()
+    await this.page.mouse.move(endX, endY, { steps: 25 })
+    await this.page.mouse.up()
+  }
+
+  async dragTaskToTask(title, targetTitle) {
+    const source = await this.getTaskCardDraggableByTitle(title)
+    const target = await this.getTaskCardDraggableByTitle(targetTitle)
+
+    const sourceBox = await source.boundingBox()
+    const targetBox = await target.boundingBox()
+
+    if (!sourceBox || !targetBox) {
+      throw new Error('Не удалось получить координаты для drag&drop')
+    }
+
+    const startX = sourceBox.x + sourceBox.width / 2
+    const startY = sourceBox.y + Math.min(20, sourceBox.height / 2)
+
+    const endX = targetBox.x + targetBox.width / 2
+    const endY = targetBox.y + Math.min(10, targetBox.height / 2)
+
+    await this.page.mouse.move(startX, startY)
+    await this.page.mouse.down()
+    await this.page.mouse.move(endX, endY, { steps: 25 })
+    await this.page.mouse.up()
+  }
+
+  async dragTaskToCoordinates(title, x, y) {
+    const source = await this.getTaskCardDraggableByTitle(title)
+    const sourceBox = await source.boundingBox()
+
+    if (!sourceBox) {
+      throw new Error('Не удалось получить координаты для drag&drop')
+    }
+
+    const startX = sourceBox.x + sourceBox.width / 2
+    const startY = sourceBox.y + Math.min(20, sourceBox.height / 2)
+
+    await this.page.mouse.move(startX, startY)
+    await this.page.mouse.down()
+    await this.page.mouse.move(x, y, { steps: 25 })
+    await this.page.mouse.up()
+  }
+
+  async getTaskButtonNamesInColumn(statusName) {
+    const column = this.getStatusColumn(statusName)
+    return await column.getByRole('button').allTextContents()
+  }
+
+  async openCombobox(label) {
+    const combo = this.page.getByRole('combobox', { name: new RegExp(String.raw`^${label}\b`, 'i') }).first()
+    await combo.waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM })
+    await combo.click()
+  }
+
+  async selectOptionFromOpenedSelect(optionText) {
+    const listbox = this.page.getByRole('listbox').first()
+    await listbox.waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM })
+    await listbox.getByText(optionText, { exact: true }).click()
+  }
+
+  async setFilterAssignee(email) {
+    await this.openCombobox('Assignee')
+    await this.selectOptionFromOpenedSelect(email)
+  }
+
+  async setFilterStatus(statusName) {
+    await this.openCombobox('Status')
+    await this.selectOptionFromOpenedSelect(statusName)
+  }
+
+  async setFilterLabel(labelName) {
+    await this.openCombobox('Label')
+    await this.selectOptionFromOpenedSelect(labelName)
+  }
+
+  async setFormAssignee(email) {
+    await this.openCombobox('Assignee')
+    await this.selectOptionFromOpenedSelect(email)
+  }
+
+  async setFormStatus(statusName) {
+    await this.openCombobox('Status')
+    await this.selectOptionFromOpenedSelect(statusName)
+  }
+
+  async setFormLabels(labelNames) {
+    await this.openCombobox('Label')
+    const listbox = this.page.getByRole('listbox').first()
+    await listbox.waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM })
+
+    for (const name of labelNames) {
+      await listbox.getByText(name, { exact: true }).click()
+    }
+
+    await this.page.keyboard.press('Escape')
+  }
+
+  async openTaskEditFromCard(title) {
+    const container = this.getTaskCardContainerByTitle(title)
+    await container.getByRole('link', { name: 'Edit' }).first().click()
+    await this.getTitleInput().waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM })
+  }
+
+  async openTaskShowFromCard(title) {
+    const container = this.getTaskCardContainerByTitle(title)
+    await container.getByRole('link', { name: 'Show' }).first().click()
+  }
+}

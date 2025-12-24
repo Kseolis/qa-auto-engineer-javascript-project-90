@@ -18,43 +18,65 @@ export const testUsers = {
 }
 
 export function generateUserData() {
+  const ts = Date.now()
   return {
-    email: `test${Date.now()}@example.com`,
+    email: `test${ts}@example.com`,
     firstName: 'Test',
     lastName: 'User',
   }
 }
 
 export function generateEditedUserData() {
+  const ts = Date.now()
   return {
-    email: `edited${Date.now()}@example.com`,
+    email: `edited${ts}@example.com`,
     firstName: 'Edited',
     lastName: 'Name',
   }
 }
 
 export function generateStatusData() {
+  const ts = Date.now()
   return {
-    name: `Test Status ${Date.now()}`,
-    slug: `test-status-${Date.now()}`,
+    name: `Test Status ${ts}`,
+    slug: `test-status-${ts}`,
   }
 }
 
 export function generateEditedStatusData() {
+  const ts = Date.now()
   return {
-    name: `Edited Status ${Date.now()}`,
-    slug: `edited-status-${Date.now()}`,
+    name: `Edited Status ${ts}`,
+    slug: `edited-status-${ts}`,
   }
 }
 
 export function generateLabelData() {
+  const ts = Date.now()
   return {
-    name: `Test Label ${Date.now()}`,
+    name: `Test Label ${ts}`,
   }
 }
 
 export function generateEditedLabelData() {
+  const ts = Date.now()
   return {
-    name: `Edited Label ${Date.now()}`,
+    name: `Edited Label ${ts}`,
+  }
+}
+
+export function generateTaskData() {
+  const ts = Date.now()
+  return {
+    title: `Test Task ${ts}`,
+    content: `Description ${ts}`,
+  }
+}
+
+export function generateEditedTaskData() {
+  const ts = Date.now()
+  return {
+    title: `Edited Task ${ts}`,
+    content: `Edited description ${ts}`,
   }
 }
