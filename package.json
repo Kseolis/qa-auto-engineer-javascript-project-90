@@ -7,7 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "playwright test",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report",
+    "sonar": "node node_modules/sonarqube-scanner/bin/sonar-scanner.js"
   },
   "dependencies": {
     "@hexlet/testing-task-manager": "^0.1.5",
@@ -28,6 +33,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "sonarqube-scanner": "^4.3.2",
     "vite": "^7.2.4"
   }
 }
