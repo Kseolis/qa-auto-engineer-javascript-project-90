@@ -11,11 +11,24 @@ lint:
 	npm run lint
 
 lint-fix:
-	npm run lint -- --fix
+	npm run lint:fix
 
 test:
-	npx playwright test
+	npm test
 
 test-debug:
-	npx playwright test --debug
+	npm run test:debug
+
+test-ui:
+	npm run test:ui
+
+test-report:
+	npm run test:report
+
+test-headed:
+	npm run test:headed
+
+# Полная проверка (lint + test)
+check: lint test
+	@echo "Все проверки пройдены"
 

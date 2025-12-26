@@ -2,7 +2,7 @@
 
 Проект содержит автотесты UI на **Playwright** для учебного Task Manager.
 
-### Быстрый старт
+## Быстрый старт
 
 - **Установка зависимостей**:
 
@@ -22,7 +22,7 @@ make run
 make lint
 ```
 
-### Запуск автотестов
+## Запуск автотестов
 
 Playwright-конфигурация поднимает dev-сервер автоматически через `webServer` (см. `playwright.config.js`), поэтому отдельно стартовать `npm run dev` обычно не нужно.
 
@@ -56,7 +56,29 @@ npm run test:ui
 npm run test:report
 ```
 
-### Переменные окружения
+## CI/CD (GitHub Actions)
+
+Проект настроен с двумя workflow:
+
+### 1. CI Pipeline (`.github/workflows/ci.yml`)
+
+Запускается при push/PR в `main` или `develop`:
+- ESLint проверка
+- Playwright тесты
+
+### 2. Nightly Tests (`.github/workflows/nightly.yml`)
+
+Запускается каждый день в 2:00 UTC:
+- Тесты на всех браузерах (chromium, firefox, webkit)
+- Можно запустить вручную через `workflow_dispatch`
+
+### Настройка секретов в GitHub
+
+Для работы CI/CD добавьте в Settings → Secrets → Actions:
+
+- `BASE_URL` (опционально) - URL приложения для тестов
+
+## Переменные окружения
 
 - **BASE_URL**: базовый URL приложения (по умолчанию `http://localhost:5173`)
 - **EXPECT_TIMEOUT**: таймаут ожиданий `expect()` в мс (по умолчанию `5000`)

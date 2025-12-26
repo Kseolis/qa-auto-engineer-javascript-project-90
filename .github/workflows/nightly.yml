@@ -1,0 +1,40 @@
+name: Nightly Tests
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Каждый день в 2:00 UTC
+  workflow_dispatch: # Ручной запуск
+
+jobs:
+  test-all-browsers:
+    name: Test All Browsers
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+      - run: npm ci
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npm test -- --project=${{ matrix.browser }}
+        env:
+          CI: true
+          BASE_URL: ${{ secrets.BASE_URL || 'http://localhost:5173' }}
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results-${{ matrix.browser }}
+          path: test-results/
+          retention-days: 7
+
