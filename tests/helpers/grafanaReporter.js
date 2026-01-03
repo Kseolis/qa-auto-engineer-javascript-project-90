@@ -17,7 +17,7 @@ import { getLogger } from './logger.js'
 const logger = getLogger()
 
 export class GrafanaReporter {
-  constructor(_options = {}) {
+  constructor(options = {}) {
     this.influxUrl = options.influxUrl || process.env.INFLUX_URL || 'http://localhost:8086'
     this.influxDb = options.influxDb || process.env.INFLUX_DB || 'playwright_metrics'
     this.influxToken = options.influxToken || process.env.INFLUX_TOKEN
