@@ -13,10 +13,43 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion != 'cancelled' }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - name: Download artifacts from workflow run
+        uses: actions/github-script@v7
+        env:
+          RUN_ID: ${{ github.event.workflow_run.id }}
         with:
-          name: playwright-report-chromium
-          path: playwright-report/
+          script: |
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: process.env.RUN_ID,
+            })
+            
+            console.log(`Found ${artifacts.data.artifacts.length} artifacts`)
+            
+            const fs = require('fs')
+            const path = require('path')
+            const { execSync } = require('child_process')
+            
+            // Скачиваем все playwright-report артефакты (для всех браузеров)
+            for (const artifact of artifacts.data.artifacts) {
+              if (artifact.name.includes('playwright-report')) {
+                console.log(`Downloading artifact: ${artifact.name}`)
+                const download = await github.rest.actions.downloadWorkflowRunArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id,
+                  archive_format: 'zip',
+                })
+                
+                const zipPath = path.join(process.cwd(), `${artifact.name}.zip`)
+                fs.writeFileSync(zipPath, Buffer.from(download.data))
+                
+                // Extract using unzip (available in ubuntu-latest)
+                execSync(`unzip -q ${zipPath} -d playwright-report/`)
+                fs.unlinkSync(zipPath)
+              }
+            }
       - name: Comment PR with test results
         if: github.event.workflow_run.event == 'pull_request'
         uses: actions/github-script@v7

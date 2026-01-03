@@ -1,4 +1,4 @@
-import { getApiClient } from './helpers/apiClient.js'
+import { createApiClient } from './helpers/apiClient.js'
 
 /**
  * Global setup для тестов
@@ -8,7 +8,7 @@ async function globalSetup() {
   console.log('Running global setup...')
 
   // Проверяем доступность API
-  const apiClient = getApiClient()
+  const apiClient = createApiClient()
   try {
     // Попытка получить список пользователей для проверки доступности API
     await apiClient.getUsers()

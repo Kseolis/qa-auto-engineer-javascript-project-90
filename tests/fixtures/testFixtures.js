@@ -1,5 +1,5 @@
 import { test as base } from '@playwright/test'
-import { getApiClient } from '../helpers/apiClient.js'
+import { createApiClient } from '../helpers/apiClient.js'
 import { testUsers } from '../helpers/testData.js'
 
 /**
@@ -15,7 +15,7 @@ export const test = base.extend({
    * API клиент для управления тестовыми данными
    */
   apiClient: async ({}, use) => {
-    const client = getApiClient()
+    const client = createApiClient()
     await use(client)
   },
 
@@ -39,8 +39,9 @@ export const test = base.extend({
 
     await use(registerEntity)
 
-    // Автоматическая очистка после теста
-    if (testInfo.status === 'passed' || testInfo.status === 'failed') {
+    // ENFORCED CLEANUP: Автоматическая очистка после теста (всегда выполняется)
+    // Не зависит от статуса теста - cleanup обязателен для изоляции
+    if (testInfo.status === 'passed' || testInfo.status === 'failed' || testInfo.status === 'skipped') {
       // Удаляем в обратном порядке зависимостей (tasks -> labels -> statuses -> users)
       for (const taskId of createdEntities.tasks) {
         try {
@@ -186,7 +187,7 @@ export const testWithData = base.extend({
  * Helper для создания storage state для переиспользования сессий
  */
 export async function createAuthStorageState(page, username, password) {
-  const apiClient = getApiClient()
+  const apiClient = createApiClient()
   const loginResponse = await apiClient.login(username, password)
 
   // Сохраняем cookies

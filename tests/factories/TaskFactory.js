@@ -1,4 +1,4 @@
-import { getApiClient } from '../helpers/apiClient.js'
+import { createApiClient } from '../helpers/apiClient.js'
 
 /**
  * Factory для создания задач
@@ -13,7 +13,7 @@ export class TaskFactory {
       status_id: null,
       label_ids: [],
     }
-    this.apiClient = getApiClient()
+    this.apiClient = createApiClient()
   }
 
   /**

@@ -13,9 +13,5 @@
 export default {
   '*.{js,jsx}': [
     'eslint --fix', // Автоматически исправляем что можем
-    'prettier --write', // Форматируем код (если используется)
-  ],
-  '*.{json,md}': [
-    'prettier --write', // Форматируем JSON и Markdown
   ],
 }

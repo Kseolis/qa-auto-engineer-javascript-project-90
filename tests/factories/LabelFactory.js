@@ -1,4 +1,4 @@
-import { getApiClient } from '../helpers/apiClient.js'
+import { createApiClient } from '../helpers/apiClient.js'
 
 /**
  * Factory для создания меток
@@ -9,7 +9,7 @@ export class LabelFactory {
     this.data = {
       name: null,
     }
-    this.apiClient = getApiClient()
+    this.apiClient = createApiClient()
   }
 
   /**

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { getApiClient } from '../../../helpers/apiClient.js'
+import { createApiClient } from '../../../helpers/apiClient.js'
 import { UserFactory } from '../../../factories/UserFactory.js'
 import { StatusFactory } from '../../../factories/StatusFactory.js'
 import { LabelFactory } from '../../../factories/LabelFactory.js'
@@ -20,7 +20,7 @@ test.describe('Task Workflow Integration', () => {
   }
 
   test.beforeEach(async () => {
-    apiClient = getApiClient()
+    apiClient = createApiClient()
     try {
       await apiClient.login(testUsers.valid.login, testUsers.valid.password)
     }
