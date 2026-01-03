@@ -1,4 +1,4 @@
-import { getApiClient } from './apiClient.js'
+import { createApiClient } from './apiClient.js'
 
 /**
  * Утилиты для изоляции тестов
@@ -56,7 +56,7 @@ export class TestDataRegistry {
  * @param {ApiClient} apiClient - API клиент
  */
 export async function cleanupRegisteredEntities(registry, apiClient = null) {
-  const client = apiClient || getApiClient()
+  const client = apiClient || createApiClient()
   const entities = registry.getAll()
 
   // Удаляем в обратном порядке зависимостей
@@ -109,7 +109,7 @@ export async function clearBrowserState(page) {
  */
 export function createIsolatedTestContext(page, apiClient = null) {
   const registry = new TestDataRegistry()
-  const client = apiClient || getApiClient()
+  const client = apiClient || createApiClient()
 
   return {
     registry,

@@ -1,4 +1,4 @@
-import { getApiClient } from '../helpers/apiClient.js'
+import { createApiClient } from '../helpers/apiClient.js'
 
 /**
  * Factory для создания статусов
@@ -10,7 +10,7 @@ export class StatusFactory {
       name: null,
       slug: null,
     }
-    this.apiClient = getApiClient()
+    this.apiClient = createApiClient()
   }
 
   /**

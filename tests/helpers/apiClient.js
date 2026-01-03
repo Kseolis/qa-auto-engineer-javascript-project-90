@@ -456,18 +456,13 @@ export function createApiClient(baseURL = null) {
 }
 
 /**
- * Глобальный экземпляр API клиента (singleton)
- */
-let globalApiClient = null
-
-/**
- * Получает или создает глобальный экземпляр API клиента
- * @returns {ApiClient} Глобальный экземпляр API клиента
+ * DEPRECATED: getApiClient() удален из-за проблем с mutable token в singleton
+ * Используйте createApiClient() для создания нового экземпляра
+ * 
+ * @deprecated Use createApiClient() instead
  */
 export function getApiClient() {
-  if (!globalApiClient) {
-    globalApiClient = new ApiClient()
-  }
-  return globalApiClient
+  console.warn('getApiClient() is deprecated. Use createApiClient() instead.')
+  return createApiClient()
 }
 

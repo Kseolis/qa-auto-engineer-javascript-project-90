@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { getApiClient } from '../../../helpers/apiClient.js'
+import { createApiClient } from '../../../helpers/apiClient.js'
 import { testUsers } from '../../../helpers/testData.js'
 
 /**
@@ -10,7 +10,7 @@ test.describe('API Client Integration', () => {
   let apiClient
 
   test.beforeEach(async () => {
-    apiClient = getApiClient()
+    apiClient = createApiClient()
     // Авторизуемся для доступа к API
     try {
       await apiClient.login(testUsers.valid.login, testUsers.valid.password)

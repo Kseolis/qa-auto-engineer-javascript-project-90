@@ -1,0 +1,81 @@
+name: Mutation Testing
+
+on:
+  schedule:
+    # Каждый понедельник в 2:00 AM UTC
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+    # Ручной запуск
+
+jobs:
+  mutation-test:
+    name: Stryker Mutation Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Для incremental mode
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - run: npm ci
+      
+      - name: Run Mutation Tests
+        run: npm run test:mutation
+        continue-on-error: true  # Не падать если score низкий
+      
+      - name: Upload Mutation Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutation-report
+          path: |
+            mutation-report.html
+            mutation-report.json
+            .stryker-tmp/
+          retention-days: 30
+      
+      - name: Comment PR with Mutation Score
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs')
+            const path = require('path')
+            
+            // Stryker создает JSON отчет в корне проекта
+            const reportPath = path.join(process.cwd(), 'mutation-report.json')
+            if (!fs.existsSync(reportPath)) {
+              console.log('Mutation report not found, skipping comment')
+              return
+            }
+            
+            const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'))
+            const score = report.mutationScore
+            
+            const comment = `## 🧬 Mutation Testing Results
+            
+            **Mutation Score**: ${score.toFixed(2)}%
+            
+            | Status | Count |
+            |--------|-------|
+            | ✅ Killed | ${report.killed} |
+            | ❌ Survived | ${report.survived} |
+            | ⏱️ Timeout | ${report.timeout} |
+            | ⚪ No Coverage | ${report.noCoverage} |
+            
+            ${score >= 80 ? '✅ Great test quality!' : score >= 60 ? '🟡 Good, but could be better' : '❌ Test quality needs improvement'}
+            `
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            })
+

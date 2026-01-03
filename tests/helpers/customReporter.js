@@ -1,4 +1,5 @@
 import { getLogger } from './logger.js'
+import { createGrafanaReporter } from './grafanaReporter.js'
 
 /**
  * Кастомный reporter для Playwright
@@ -7,6 +8,7 @@ import { getLogger } from './logger.js'
 export default class CustomReporter {
   constructor(options = {}) {
     this.logger = getLogger()
+    this.grafana = createGrafanaReporter(options)
     this.options = options
     this.testResults = []
   }
@@ -23,7 +25,7 @@ export default class CustomReporter {
     this.logger.info(`Test started: ${test.title}`)
   }
 
-  onTestEnd(test, result) {
+  async onTestEnd(test, result) {
     const duration = result.duration
     const status = result.status
 
@@ -45,10 +47,20 @@ export default class CustomReporter {
       this.logger.warn(`Test skipped: ${test.title}`)
     }
 
+    // Отправляем метрики в Grafana
+    await this.grafana.reportTestMetrics({
+      title: test.title,
+      file: test.location?.file || 'unknown',
+      status,
+      duration,
+      retry: result.retry,
+      browser: test.parent?.project()?.name || 'chromium',
+    })
+
     this.logger.setTestName(null)
   }
 
-  onEnd(result) {
+  async onEnd(result) {
     const passed = this.testResults.filter(r => r.status === 'passed').length
     const failed = this.testResults.filter(r => r.status === 'failed').length
     const skipped = this.testResults.filter(r => r.status === 'skipped').length
@@ -70,8 +82,17 @@ export default class CustomReporter {
       })
     }
 
+    // Отправляем summary в Grafana
+    await this.grafana.reportSummary({
+      total: this.testResults.length,
+      passed,
+      failed,
+      skipped,
+      duration: totalDuration,
+    })
+
     // Сохраняем логи в файл
-    this.logger.saveToFile(`test-run-${Date.now()}.log`)
+    await this.logger.saveToFile(`test-run-${Date.now()}.log`)
   }
 
   printsToStdio() {

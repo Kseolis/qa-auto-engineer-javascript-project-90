@@ -1,4 +1,4 @@
-import { getApiClient } from '../helpers/apiClient.js'
+import { createApiClient } from '../helpers/apiClient.js'
 
 /**
  * Factory для создания пользователей
@@ -11,7 +11,7 @@ export class UserFactory {
       firstName: 'Test',
       lastName: 'User',
     }
-    this.apiClient = getApiClient()
+    this.apiClient = createApiClient()
   }
 
   /**
