@@ -126,4 +126,3 @@ export async function createTestUser() {
 export async function createTestUserWithEmail(email) {
   return UserFactory.create().withEmail(email).withUniqueData().create()
 }
-

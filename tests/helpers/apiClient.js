@@ -54,7 +54,8 @@ export class ApiClient {
       let responseData = null
       if (contentType && contentType.includes('application/json')) {
         responseData = await response.json()
-      } else {
+      }
+      else {
         responseData = await response.text()
       }
 
@@ -65,7 +66,8 @@ export class ApiClient {
       }
 
       return responseData
-    } catch (error) {
+    }
+    catch (error) {
       if (error.message.includes('API request failed')) {
         throw error
       }
@@ -392,31 +394,31 @@ export class ApiClient {
     switch (entityType) {
       case 'users':
         entities = await this.getUsers()
-        deleteMethod = (id) => this.deleteUser(id)
-        identifierFn = identifierFn || ((u) => u.id)
+        deleteMethod = id => this.deleteUser(id)
+        identifierFn = identifierFn || (u => u.id)
         break
       case 'statuses':
         entities = await this.getStatuses()
-        deleteMethod = (id) => this.deleteStatus(id)
-        identifierFn = identifierFn || ((s) => s.id)
+        deleteMethod = id => this.deleteStatus(id)
+        identifierFn = identifierFn || (s => s.id)
         break
       case 'labels':
         entities = await this.getLabels()
-        deleteMethod = (id) => this.deleteLabel(id)
-        identifierFn = identifierFn || ((l) => l.id)
+        deleteMethod = id => this.deleteLabel(id)
+        identifierFn = identifierFn || (l => l.id)
         break
       case 'tasks':
         entities = await this.getTasks()
-        deleteMethod = (id) => this.deleteTask(id)
-        identifierFn = identifierFn || ((t) => t.id)
+        deleteMethod = id => this.deleteTask(id)
+        identifierFn = identifierFn || (t => t.id)
         break
       default:
         throw new Error(`Unknown entity type: ${entityType}`)
     }
 
-    const deletePromises = entities.map(entity => {
+    const deletePromises = entities.map((entity) => {
       const id = identifierFn(entity)
-      return deleteMethod(id).catch(error => {
+      return deleteMethod(id).catch((error) => {
         console.warn(`Failed to delete ${entityType} with id ${id}:`, error.message)
         return null
       })
@@ -437,7 +439,8 @@ export class ApiClient {
     for (const type of entityTypes) {
       try {
         stats[type] = await this.deleteAll(type)
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(`Failed to cleanup ${type}:`, error.message)
         stats[type] = 0
       }
@@ -458,11 +461,10 @@ export function createApiClient(baseURL = null) {
 /**
  * DEPRECATED: getApiClient() удален из-за проблем с mutable token в singleton
  * Используйте createApiClient() для создания нового экземпляра
- * 
+ *
  * @deprecated Use createApiClient() instead
  */
 export function getApiClient() {
   console.warn('getApiClient() is deprecated. Use createApiClient() instead.')
   return createApiClient()
 }
-

@@ -16,7 +16,7 @@ export async function retry(fn, options = {}) {
   const {
     maxRetries = 3,
     delay = 1000,
-    shouldRetry = (error) => error !== null,
+    shouldRetry = error => error !== null,
   } = options
 
   let lastError = null
@@ -28,7 +28,8 @@ export async function retry(fn, options = {}) {
         logger.info(`Operation succeeded on attempt ${attempt}`)
       }
       return result
-    } catch (error) {
+    }
+    catch (error) {
       lastError = error
       if (!shouldRetry(error) || attempt === maxRetries) {
         break
@@ -66,7 +67,8 @@ export class CircuitBreaker {
       if (Date.now() - this.lastFailureTime > this.resetTimeout) {
         this.state = 'HALF_OPEN'
         logger.info(`${this.name}: Circuit breaker transitioning to HALF_OPEN`)
-      } else {
+      }
+      else {
         throw new Error(`${this.name}: Circuit breaker is OPEN`)
       }
     }
@@ -75,7 +77,8 @@ export class CircuitBreaker {
       const result = await fn()
       this.onSuccess()
       return result
-    } catch (error) {
+    }
+    catch (error) {
       this.onFailure()
       throw error
     }
@@ -154,7 +157,8 @@ export async function validateElementReady(locator, options = {}) {
       }
     }
     return true
-  } catch (error) {
+  }
+  catch (error) {
     logger.error('Element validation failed', {
       error: error.message,
       locator: locator.toString(),
@@ -175,7 +179,8 @@ export async function withGracefulDegradation(fn, fallbackValue = null, options 
 
   try {
     return await fn()
-  } catch (error) {
+  }
+  catch (error) {
     if (logWarning) {
       logger.warn('Operation failed, using fallback value', {
         error: error.message,
@@ -185,4 +190,3 @@ export async function withGracefulDegradation(fn, fallbackValue = null, options 
     return fallbackValue
   }
 }
-

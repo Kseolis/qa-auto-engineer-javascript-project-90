@@ -46,7 +46,8 @@ export const test = base.extend({
       for (const taskId of createdEntities.tasks) {
         try {
           await apiClient.deleteTask(taskId)
-        } catch (error) {
+        }
+        catch (error) {
           console.warn(`Failed to cleanup task ${taskId}:`, error.message)
         }
       }
@@ -54,7 +55,8 @@ export const test = base.extend({
       for (const labelId of createdEntities.labels) {
         try {
           await apiClient.deleteLabel(labelId)
-        } catch (error) {
+        }
+        catch (error) {
           console.warn(`Failed to cleanup label ${labelId}:`, error.message)
         }
       }
@@ -62,7 +64,8 @@ export const test = base.extend({
       for (const statusId of createdEntities.statuses) {
         try {
           await apiClient.deleteStatus(statusId)
-        } catch (error) {
+        }
+        catch (error) {
           console.warn(`Failed to cleanup status ${statusId}:`, error.message)
         }
       }
@@ -70,7 +73,8 @@ export const test = base.extend({
       for (const userId of createdEntities.users) {
         try {
           await apiClient.deleteUser(userId)
-        } catch (error) {
+        }
+        catch (error) {
           console.warn(`Failed to cleanup user ${userId}:`, error.message)
         }
       }
@@ -121,7 +125,8 @@ export const testWithData = base.extend({
     // Дополнительная очистка на случай, если autoCleanup не сработал
     try {
       await apiClient.deleteUser(user.id)
-    } catch (error) {
+    }
+    catch (error) {
       // Игнорируем ошибки, если уже удалено
     }
   },
@@ -140,7 +145,8 @@ export const testWithData = base.extend({
 
     try {
       await apiClient.deleteStatus(status.id)
-    } catch (error) {
+    }
+    catch (error) {
       // Игнорируем ошибки
     }
   },
@@ -158,7 +164,8 @@ export const testWithData = base.extend({
 
     try {
       await apiClient.deleteLabel(label.id)
-    } catch (error) {
+    }
+    catch (error) {
       // Игнорируем ошибки
     }
   },
@@ -177,7 +184,8 @@ export const testWithData = base.extend({
 
     try {
       await apiClient.deleteTask(task.id)
-    } catch (error) {
+    }
+    catch (error) {
       // Игнорируем ошибки
     }
   },
@@ -204,4 +212,3 @@ export async function createAuthStorageState(page, username, password) {
   // Сохраняем storage state
   await page.context().storageState({ path: 'tests/fixtures/auth.json' })
 }
-

@@ -5,15 +5,15 @@ import { retry, getCircuitBreaker } from '../helpers/resilience.js'
 
 /**
  * Chaos Engineering & Resilience тесты
- * 
+ *
  * ЗАЧЕМ: Проверяем устойчивость системы к сбоям
  * ПОЧЕМУ: В production всегда что-то ломается - система должна gracefully деградировать
- * 
+ *
  * АЛЬТЕРНАТИВЫ:
  * 1. Chaos Monkey - автоматическое отключение сервисов
  * 2. Gremlin - платформа для chaos engineering
  * 3. Litmus - Kubernetes chaos engineering
- * 
+ *
  * ВЫБОР: Playwright network conditions + retry логика
  *        Для production нужны специализированные инструменты
  */
@@ -26,12 +26,12 @@ test.describe('Resilience Tests', () => {
     test('приложение gracefully деградирует при потере сети', async ({ page }) => {
       // ЗАЧЕМ: Проверяем поведение при потере сети
       // ПОЧЕМУ: Пользователи могут потерять интернет - приложение не должно полностью падать
-      // 
+      //
       // КАК РАБОТАЕТ: Отключаем сеть, проверяем что приложение показывает ошибку,
       //               но не крашится
       // АЛЬТЕРНАТИВА: Можно использовать service workers для offline режима,
       //               но базовая проверка тоже важна
-      
+
       const tasksPage = new TasksPage(page)
       await tasksPage.goto()
 
@@ -56,11 +56,11 @@ test.describe('Resilience Tests', () => {
     test('приложение восстанавливается после восстановления сети', async ({ page }) => {
       // ЗАЧЕМ: Проверяем восстановление после сбоя
       // ПОЧЕМУ: Система должна автоматически восстанавливаться
-      // 
+      //
       // КАК РАБОТАЕТ: Отключаем сеть, включаем обратно, проверяем что все работает
       // АЛЬТЕРНАТИВА: Можно использовать exponential backoff для retry,
       //               но базовая проверка достаточна
-      
+
       const tasksPage = new TasksPage(page)
       await tasksPage.goto()
 
@@ -80,11 +80,11 @@ test.describe('Resilience Tests', () => {
     test('приложение работает при медленной сети', async ({ page }) => {
       // ЗАЧЕМ: Проверяем работу при медленной сети
       // ПОЧЕМУ: Не все пользователи имеют быстрый интернет
-      // 
+      //
       // КАК РАБОТАЕТ: Устанавливаем медленную сеть, проверяем что приложение работает
       // АЛЬТЕРНАТИВА: Можно использовать реальные network throttling профили,
       //               но эмуляция через Playwright проще
-      
+
       const tasksPage = new TasksPage(page)
 
       // Устанавливаем медленную сеть (3G)
@@ -106,11 +106,11 @@ test.describe('Resilience Tests', () => {
     test('retry логика работает для нестабильных операций', async ({ page }) => {
       // ЗАЧЕМ: Проверяем retry логику для нестабильных операций
       // ПОЧЕМУ: Некоторые операции могут временно падать (network hiccups)
-      // 
+      //
       // КАК РАБОТАЕТ: Симулируем временный сбой, проверяем что retry помогает
       // АЛЬТЕРНАТИВА: Можно использовать exponential backoff,
       //               но простой retry достаточен для большинства случаев
-      
+
       const tasksPage = new TasksPage(page)
       let attemptCount = 0
 
@@ -119,7 +119,8 @@ test.describe('Resilience Tests', () => {
         attemptCount++
         if (attemptCount < 3) {
           route.abort('failed')
-        } else {
+        }
+        else {
           route.continue()
         }
       })
@@ -139,18 +140,18 @@ test.describe('Resilience Tests', () => {
     test('Circuit Breaker предотвращает каскадные сбои', async ({ page }) => {
       // ЗАЧЕМ: Проверяем Circuit Breaker паттерн
       // ПОЧЕМУ: При множественных сбоях лучше быстро отказать, чем пытаться бесконечно
-      // 
+      //
       // КАК РАБОТАЕТ: Симулируем множественные сбои, проверяем что Circuit Breaker открывается
       // АЛЬТЕРНАТИВА: Можно использовать готовые библиотеки (opossum для Node.js),
       //               но для тестов достаточно простой реализации
-      
+
       const circuitBreaker = getCircuitBreaker('test-api', {
         failureThreshold: 3,
         resetTimeout: 1000,
       })
 
       // Симулируем множественные сбои
-      await page.route('**/api/users', (route) => route.abort('failed'))
+      await page.route('**/api/users', route => route.abort('failed'))
 
       let failures = 0
       for (let i = 0; i < 5; i++) {
@@ -171,4 +172,3 @@ test.describe('Resilience Tests', () => {
     })
   })
 })
-

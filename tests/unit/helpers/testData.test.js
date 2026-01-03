@@ -32,4 +32,3 @@ describe('testData helpers', () => {
     })
   })
 })
-

@@ -98,4 +98,3 @@ export async function selectRowByCellText(page, text, columnIndex) {
   const checkbox = getRowCheckbox(row)
   await checkbox.check()
 }
-

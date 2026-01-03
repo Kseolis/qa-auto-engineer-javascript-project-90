@@ -13,11 +13,11 @@ async function globalSetup() {
     // Попытка получить список пользователей для проверки доступности API
     await apiClient.getUsers()
     console.log('API is available')
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('API might not be available:', error.message)
     // Не падаем, так как тесты могут работать и без API
   }
 }
 
 export default globalSetup
-

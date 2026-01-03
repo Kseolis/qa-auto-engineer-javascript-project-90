@@ -5,15 +5,15 @@ import { UsersPage } from '../pages/UsersPage.js'
 
 /**
  * Performance тесты
- * 
+ *
  * ЗАЧЕМ: Проверяем, что приложение работает в пределах Performance Budgets
  * ПОЧЕМУ: Медленное приложение = плохой UX = потеря пользователей
- * 
+ *
  * АЛЬТЕРНАТИВЫ:
  * 1. Lighthouse CI - автоматический анализ производительности
  * 2. WebPageTest - детальный анализ загрузки
  * 3. k6/Gatling - нагрузочное тестирование
- * 
+ *
  * ВЫБОР: Playwright performance API - встроен, не требует дополнительных инструментов,
  *        дает метрики времени выполнения операций
  */
@@ -27,7 +27,7 @@ test.describe('Performance Tests', () => {
       // ЗАЧЕМ: Проверяем время загрузки критичной страницы
       // ПОЧЕМУ: Пользователи ожидают быструю загрузку (<2s считается хорошим)
       // АЛЬТЕРНАТИВА: Можно использовать Navigation Timing API, но Playwright проще
-      
+
       const startTime = Date.now()
       const tasksPage = new TasksPage(page)
       await tasksPage.goto()
@@ -52,7 +52,7 @@ test.describe('Performance Tests', () => {
       // ПОЧЕМУ: Медленные операции = плохой UX
       // АЛЬТЕРНАТИВА: Можно измерять через Performance Observer API,
       //               но измерение времени выполнения проще и понятнее
-      
+
       const usersPage = new UsersPage(page)
       await usersPage.goto()
 
@@ -74,7 +74,7 @@ test.describe('Performance Tests', () => {
       // ПОЧЕМУ: Пользователи ожидают мгновенный отклик на действия
       // АЛЬТЕРНАТИВА: Можно использовать requestIdleCallback для измерения,
       //               но простой таймер достаточен для E2E тестов
-      
+
       const tasksPage = new TasksPage(page)
       await tasksPage.goto()
 
@@ -92,10 +92,10 @@ test.describe('Performance Tests', () => {
       // ПОЧЕМУ: Предотвращаем регрессии производительности
       // АЛЬТЕРНАТИВА: Можно использовать Lighthouse CI с baseline,
       //               но для простых метрик достаточно сравнения с константой
-      // 
+      //
       // В PRODUCTION: Baseline должен храниться в CI/CD и обновляться
       //               при улучшениях производительности
-      
+
       const BASELINE_LOAD_TIME = 2000 // Baseline: 2 секунды
 
       const startTime = Date.now()
@@ -107,4 +107,3 @@ test.describe('Performance Tests', () => {
     })
   })
 })
-

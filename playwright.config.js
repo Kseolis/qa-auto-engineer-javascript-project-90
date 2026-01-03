@@ -26,7 +26,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
-  
+
   // Visual regression snapshots
   snapshotPathTemplate: '{testDir}/{testFile}-snapshots/{arg}{ext}',
   expect: {

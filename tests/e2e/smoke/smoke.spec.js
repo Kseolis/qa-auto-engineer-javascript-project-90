@@ -33,4 +33,3 @@ test.describe('Smoke Tests', () => {
     await expect(tasksPage.getTitleInput()).toBeVisible({ timeout: 5000 })
   })
 })
-

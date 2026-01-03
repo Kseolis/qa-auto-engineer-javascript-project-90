@@ -38,12 +38,14 @@ export default class CustomReporter {
 
     if (status === 'passed') {
       this.logger.info(`Test passed: ${test.title} (${duration}ms)`)
-    } else if (status === 'failed') {
+    }
+    else if (status === 'failed') {
       this.logger.error(`Test failed: ${test.title}`, {
         error: result.error?.message,
         duration,
       })
-    } else if (status === 'skipped') {
+    }
+    else if (status === 'skipped') {
       this.logger.warn(`Test skipped: ${test.title}`)
     }
 
@@ -99,4 +101,3 @@ export default class CustomReporter {
     return true
   }
 }
-

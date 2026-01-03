@@ -75,7 +75,8 @@ export class Logger {
     // Выводим в консоль
     if (level >= LogLevel.WARN) {
       console.error(formattedMessage)
-    } else {
+    }
+    else {
       console.log(formattedMessage)
     }
   }
@@ -132,7 +133,8 @@ export class Logger {
       const content = this.logs.map(log => log.formatted).join('\n')
       await writeFile(filePath, content, 'utf-8')
       this.info(`Logs saved to ${filePath}`)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to save logs to file:', error.message)
     }
   }
@@ -179,4 +181,3 @@ export function getLogger(options = {}) {
 export function createLogger(options = {}) {
   return new Logger(options)
 }
-

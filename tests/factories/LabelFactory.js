@@ -90,4 +90,3 @@ export async function createTestLabel() {
 export async function createTestLabelWithName(name) {
   return LabelFactory.create().withName(name).create()
 }
-

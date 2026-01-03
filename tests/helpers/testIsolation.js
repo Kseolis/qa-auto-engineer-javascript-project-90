@@ -80,7 +80,8 @@ export async function cleanupRegisteredEntities(registry, apiClient = null) {
             await client.deleteUser(id)
             break
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(`Failed to cleanup ${type} ${id}:`, error.message)
       }
     }
@@ -131,9 +132,9 @@ export function withAutoCleanup(testFn) {
     const context = createIsolatedTestContext(args[0]?.page)
     try {
       await testFn(testInfo, ...args, context)
-    } finally {
+    }
+    finally {
       await context.cleanup()
     }
   }
 }
-

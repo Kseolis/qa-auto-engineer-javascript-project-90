@@ -144,7 +144,8 @@ export async function expectFormToBeVisible(formFields, expectedFields, options 
 
     if (timeout) {
       await expect.soft(formFields[fieldName], `Field ${fieldName} should be visible`).toBeVisible({ timeout })
-    } else {
+    }
+    else {
       await expect.soft(formFields[fieldName], `Field ${fieldName} should be visible`).toBeVisible()
     }
   }
@@ -153,4 +154,3 @@ export async function expectFormToBeVisible(formFields, expectedFields, options 
     await expect(saveButtonLocator, 'Save button should be visible').toBeVisible()
   }
 }
-

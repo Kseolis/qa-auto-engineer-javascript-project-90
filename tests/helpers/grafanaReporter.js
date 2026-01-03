@@ -2,15 +2,15 @@ import { getLogger } from './logger.js'
 
 /**
  * Grafana Metrics Reporter
- * 
+ *
  * ЗАЧЕМ: Отправляем метрики тестов в Grafana для мониторинга
  * ПОЧЕМУ: Нужна визуализация трендов (execution time, flaky tests, coverage)
- * 
+ *
  * АЛЬТЕРНАТИВЫ:
  * - Datadog: SaaS, дорого, но удобно
  * - New Relic: для production мониторинга
  * - ELK Stack: если уже используется
- * 
+ *
  * ВЫБОР: Grafana + InfluxDB - open source, мощно
  */
 
@@ -36,7 +36,7 @@ export class GrafanaReporter {
 
     try {
       const lineProtocol = this.convertToLineProtocol(metrics)
-      
+
       const response = await fetch(`${this.influxUrl}/write?db=${this.influxDb}`, {
         method: 'POST',
         headers: {
@@ -51,7 +51,8 @@ export class GrafanaReporter {
       }
 
       logger.debug('Metrics sent to Grafana', { metrics })
-    } catch (error) {
+    }
+    catch (error) {
       logger.error('Failed to send metrics to Grafana', { error: error.message })
     }
   }
@@ -203,7 +204,7 @@ export class GrafanaReporter {
 /**
  * DEPRECATED: getGrafanaReporter() использует singleton pattern
  * Для консистентности с apiClient, используйте createGrafanaReporter()
- * 
+ *
  * @deprecated Use createGrafanaReporter() instead
  */
 let globalReporter = null
@@ -224,10 +225,10 @@ export function createGrafanaReporter(options = {}) {
 
 /**
  * USAGE EXAMPLE:
- * 
+ *
  * // В custom reporter
  * const grafana = getGrafanaReporter()
- * 
+ *
  * onTestEnd(test, result) {
  *   await grafana.reportTestMetrics({
  *     title: test.title,
@@ -237,7 +238,7 @@ export function createGrafanaReporter(options = {}) {
  *     browser: 'chromium',
  *   })
  * }
- * 
+ *
  * onEnd(summary) {
  *   await grafana.reportSummary({
  *     total: summary.total,
@@ -248,4 +249,3 @@ export function createGrafanaReporter(options = {}) {
  *   })
  * }
  */
-

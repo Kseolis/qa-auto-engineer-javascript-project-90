@@ -1,9 +1,9 @@
 /**
  * Publish Pact contracts to Pact Broker
- * 
+ *
  * USAGE:
  * npm run test:contracts:publish
- * 
+ *
  * REQUIRES:
  * - PACT_BROKER_URL environment variable
  * - PACT_BROKER_TOKEN (optional, for auth)
@@ -13,6 +13,7 @@ import { Publisher } from '@pact-foundation/pact'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { existsSync } from 'fs'
+import process from 'node:process'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -58,4 +59,3 @@ publisher
     console.error('❌ Failed to publish Pact contracts:', error.message)
     process.exit(1)
   })
-

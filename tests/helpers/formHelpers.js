@@ -30,7 +30,7 @@ export async function fillFormField(fieldLocator, value, options = {}) {
  */
 export async function fillFormFields(fields, options = {}) {
   const promises = Object.entries(fields).map(([name, { locator, value }]) => {
-    return fillFormField(locator, value, options).catch(error => {
+    return fillFormField(locator, value, options).catch((error) => {
       throw new Error(`Failed to fill field ${name}: ${error.message}`)
     })
   })
@@ -55,7 +55,8 @@ export async function verifyFormFieldsVisible(formFields, expectedFields, option
 
     if (timeout) {
       await expect.soft(formFields[fieldName]).toBeVisible({ timeout })
-    } else {
+    }
+    else {
       await expect.soft(formFields[fieldName]).toBeVisible()
     }
   }
@@ -90,11 +91,12 @@ export async function isFieldValid(fieldLocator, options = {}) {
   try {
     await fieldLocator.waitFor({ state: 'visible', timeout })
     // Проверяем наличие класса ошибки или атрибута aria-invalid
-    const hasError = await fieldLocator.evaluate(el => {
+    const hasError = await fieldLocator.evaluate((el) => {
       return el.hasAttribute('aria-invalid') && el.getAttribute('aria-invalid') === 'true'
     })
     return !hasError
-  } catch {
+  }
+  catch {
     return false
   }
 }
@@ -117,4 +119,3 @@ export async function waitForFormSubmission(page, formLocator = null, tableLocat
     await formLocator.waitFor({ state: 'hidden', timeout }).catch(() => {})
   }
 }
-

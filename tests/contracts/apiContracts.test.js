@@ -13,7 +13,8 @@ test.describe('API Contracts', () => {
     apiClient = createApiClient()
     try {
       await apiClient.login(testUsers.valid.login, testUsers.valid.password)
-    } catch (error) {
+    }
+    catch (error) {
       // Игнорируем
     }
   })
@@ -52,7 +53,8 @@ test.describe('API Contracts', () => {
       // Очистка
       try {
         await apiClient.deleteUser(user.id)
-      } catch (error) {
+      }
+      catch (error) {
         // Игнорируем
       }
     })
@@ -90,7 +92,8 @@ test.describe('API Contracts', () => {
       // Очистка
       try {
         await apiClient.deleteTask(task.id)
-      } catch (error) {
+      }
+      catch (error) {
         // Игнорируем
       }
     })
@@ -123,4 +126,3 @@ test.describe('API Contracts', () => {
     })
   })
 })
-

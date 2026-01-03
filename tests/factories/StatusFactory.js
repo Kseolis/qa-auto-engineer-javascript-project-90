@@ -120,4 +120,3 @@ export async function createTestStatus() {
 export async function createTestStatusWithSlug(slug) {
   return StatusFactory.create().withSlug(slug).withUniqueData().create()
 }
-

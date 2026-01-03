@@ -55,6 +55,17 @@ export default [
         quotes: 'single',
         semi: false,
       }).rules,
+      'react-hooks/rules-of-hooks': 'off', // Playwright fixtures используют 'use', это не React hooks
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }], // Игнорируем неиспользуемые аргументы с _
+    },
+  },
+  {
+    files: ['scripts/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        process: 'readonly',
+      },
     },
   },
 ]
