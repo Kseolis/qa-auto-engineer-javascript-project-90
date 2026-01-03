@@ -207,7 +207,7 @@ export class GrafanaReporter {
  *
  * @deprecated Use createGrafanaReporter() instead
  */
-let globalReporter = null
+let _globalReporter = null
 
 export function getGrafanaReporter(options = {}) {
   console.warn('getGrafanaReporter() is deprecated. Use createGrafanaReporter() instead.')
